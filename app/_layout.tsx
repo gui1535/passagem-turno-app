@@ -1,11 +1,11 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import { useEffect } from 'react';
-import Toast from 'react-native-toast-message';
+import { StyleSheet, View } from 'react-native';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { AppToast } from '@/components/app-toast';
+import { useThemeColor } from '@/hooks/use-theme-color';
 import { iniciarBanco } from '@/src/data/database';
 import { garantirPastas } from '@/src/data/storage';
 import { garantirModelosTextoIniciais } from '@/src/data/seed/modelosTextoSeed';
@@ -15,8 +15,7 @@ export const unstable_settings = {
 };
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
+  const backgroundColor = useThemeColor({}, 'background');
   useEffect(() => {
     // Inicia o básico do app offline
     void (async () => {
@@ -27,13 +26,21 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack screenOptions={{ headerShown: false }}>
+    <View style={[styles.container, { backgroundColor }]}>
+      <Stack screenOptions={{ headerShown: false}}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+        <Stack.Screen name="configuracoes/padroes" options={{ title: 'Padrões de turno', animation: 'fade_from_bottom' }} />
+        <Stack.Screen name="configuracoes/pessoas" options={{ title: 'Pessoas do turno', animation: 'fade_from_bottom' }} />
       </Stack>
       <StatusBar style="auto" />
-      <Toast />
-    </ThemeProvider>
+      <AppToast />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
