@@ -12,6 +12,7 @@
       "supportsTablet": true
     },
     "android": {
+      "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -39,7 +40,14 @@
           }
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Permitir acesso à câmera para fotografar falhas do turno.",
+          "photosPermission": "Permitir acesso às fotos para anexar imagens às falhas."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

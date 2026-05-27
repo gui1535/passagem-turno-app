@@ -1,6 +1,7 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Keyboard, Pressable, StyleSheet, View } from 'react-native';
+import Toast from 'react-native-toast-message';
 
 import { CampoTexto } from '@/components/campo-texto';
 import { SelectOpcao } from '@/components/select-opcao';
@@ -10,6 +11,8 @@ import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { capturarFotoParaFalha } from '@/src/features/imagens/adicionarImagemFalha';
 import type { FalhaAtividade, Turno } from '@/src/domain/types';
 import {
   criarFalha,
@@ -18,17 +21,17 @@ import {
   pegarTurnoPorId,
   removerFalha,
 } from '@/src/data/repositories';
-import { Prioridade, SituacaoFalha, StatusFalha } from '@/src/domain/enums';
+import { SituacaoFalha, StatusFalha } from '@/src/domain/enums';
 
 const OPCOES_SITUACAO = Object.values(SituacaoFalha).map((v) => ({ label: v, value: v }));
 const OPCOES_STATUS = Object.values(StatusFalha).map((v) => ({ label: v, value: v }));
-const OPCOES_PRIORIDADE = Object.values(Prioridade).map((v) => ({ label: v, value: v }));
 
 export default function TurnoDetalheScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const turnoId = String(id);
   const tema = useColorScheme() ?? 'light';
   const corIcone = tema === 'light' ? Colors.light.icon : Colors.dark.icon;
+  const corTint = useThemeColor({}, 'tint');
 
   const [turno, setTurno] = useState<Turno | null>(null);
   const [falhas, setFalhas] = useState<FalhaAtividade[]>([]);
@@ -40,7 +43,6 @@ export default function TurnoDetalheScreen() {
   const [registrou, setRegistrou] = useState('');
   const [situacao, setSituacao] = useState<SituacaoFalha>(SituacaoFalha.Pendente);
   const [status, setStatus] = useState<StatusFalha>(StatusFalha.Aberta);
-  const [prioridade, setPrioridade] = useState<Prioridade>(Prioridade.Media);
 
   const carregar = useCallback(() => {
     void (async () => {
@@ -69,7 +71,6 @@ export default function TurnoDetalheScreen() {
       local: local.trim() || '-',
       situacao,
       status,
-      prioridade,
       tituloDefeito: titulo.trim(),
       descricaoDefeito: '',
       acoesRealizadas: '',
@@ -83,7 +84,6 @@ export default function TurnoDetalheScreen() {
     setRegistrou('');
     setSituacao(SituacaoFalha.Pendente);
     setStatus(StatusFalha.Aberta);
-    setPrioridade(Prioridade.Media);
     setNovaExpandida(false);
     carregar();
   }
@@ -93,6 +93,21 @@ export default function TurnoDetalheScreen() {
     carregar();
   }
 
+  async function tirarFotoFalha(falhaId: string) {
+    const resultado = await capturarFotoParaFalha(falhaId);
+    if (resultado === 'ok') {
+      Toast.show({ type: 'success', text1: 'Foto adicionada', position: 'top', visibilityTime: 2000 });
+    } else if (resultado === 'sem_permissao') {
+      Toast.show({
+        type: 'error',
+        text1: 'Permissão da câmera negada',
+        text2: 'Ative nas configurações do aparelho',
+        position: 'top',
+        visibilityTime: 3000,
+      });
+    }
+  }
+
   const tituloTela = turno ? `Turno ${turno.data}` : 'Turno';
 
   return (
@@ -100,7 +115,7 @@ export default function TurnoDetalheScreen() {
       <TopoVoltar titulo={tituloTela} />
 
       {turno ? (
-        <View style={[styles.card, styles.secao]}>
+        <View style={[styles.card, styles.secao, { marginTop: 20 }]}>
           <ThemedText>
             <ThemedText type="defaultSemiBold">Local:</ThemedText> {turno.localizacao}
           </ThemedText>
@@ -110,9 +125,6 @@ export default function TurnoDetalheScreen() {
               {turno.horaInicio ?? '—'} – {turno.horaFim ?? '—'}
             </ThemedText>
           ) : null}
-          <ThemedText>
-            <ThemedText type="defaultSemiBold">Tipo:</ThemedText> {turno.tipoAtividade}
-          </ThemedText>
           <ThemedText>
             <ThemedText type="defaultSemiBold">Status:</ThemedText> {turno.status}
           </ThemedText>
@@ -148,12 +160,20 @@ export default function TurnoDetalheScreen() {
                 <ThemedText type="defaultSemiBold">{f.tituloDefeito}</ThemedText>
                 <ThemedText>{f.local}</ThemedText>
                 <ThemedText style={styles.mini}>
-                  {f.situacao} • {f.status} • {f.prioridade}
+                  {f.situacao} • {f.status}
                 </ThemedText>
               </Pressable>
-              <Pressable style={styles.botaoExcluir} onPress={() => void excluirFalha(f.id)}>
-                <ThemedText style={styles.excluirTexto}>Excluir</ThemedText>
-              </Pressable>
+              <View style={styles.acoesFalha}>
+                <Pressable style={styles.botaoExcluir} onPress={() => void excluirFalha(f.id)}>
+                  <ThemedText style={styles.excluirTexto}>Excluir</ThemedText>
+                </Pressable>
+                <Pressable
+                  style={styles.botaoFoto}
+                  onPress={() => void tirarFotoFalha(f.id)}
+                  accessibilityLabel="Tirar foto">
+                  <IconSymbol name="camera" size={20} color={corTint} />
+                </Pressable>
+              </View>
             </View>
           ))
         )}
@@ -201,9 +221,6 @@ export default function TurnoDetalheScreen() {
             </View>
             <View style={styles.campo}>
               <SelectOpcao label="Status" value={status} opcoes={OPCOES_STATUS} onChange={setStatus} />
-            </View>
-            <View style={styles.campo}>
-              <SelectOpcao label="Prioridade" value={prioridade} opcoes={OPCOES_PRIORIDADE} onChange={setPrioridade} />
             </View>
             <Pressable style={styles.botao} onPress={adicionarFalha}>
               <ThemedText type="defaultSemiBold" style={styles.botaoTexto}>
@@ -275,12 +292,25 @@ const styles = StyleSheet.create({
     opacity: 0.75,
     fontSize: 13,
   },
+  acoesFalha: {
+    gap: 8,
+    alignItems: 'center',
+  },
   botaoExcluir: {
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 10,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#687076',
+  },
+  botaoFoto: {
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#687076',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   excluirTexto: {
     fontSize: 13,

@@ -9,7 +9,6 @@ type LinhaFalha = {
   local: string;
   situacao: string;
   status: string;
-  prioridade: string;
   titulo_defeito: string;
   descricao_defeito: string;
   acoes_realizadas: string;
@@ -28,7 +27,6 @@ function mapearFalha(l: LinhaFalha): FalhaAtividade {
     local: l.local,
     situacao: l.situacao as FalhaAtividade['situacao'],
     status: l.status as FalhaAtividade['status'],
-    prioridade: l.prioridade as FalhaAtividade['prioridade'],
     tituloDefeito: l.titulo_defeito,
     descricaoDefeito: l.descricao_defeito,
     acoesRealizadas: l.acoes_realizadas,
@@ -43,7 +41,6 @@ function mapearFalha(l: LinhaFalha): FalhaAtividade {
 export type FiltrosFalha = Partial<{
   situacao: FalhaAtividade['situacao'];
   status: FalhaAtividade['status'];
-  prioridade: FalhaAtividade['prioridade'];
   local: string;
   nomeRegistrou: string;
 }>;
@@ -61,10 +58,6 @@ export async function listarFalhas(turnoId: string, filtros?: FiltrosFalha) {
   if (filtros?.status) {
     where.push('status = ?');
     args.push(filtros.status);
-  }
-  if (filtros?.prioridade) {
-    where.push('prioridade = ?');
-    args.push(filtros.prioridade);
   }
   if (filtros?.local) {
     where.push('local = ?');
@@ -105,18 +98,17 @@ export async function criarFalha(
 
   await db.runAsync(
     `INSERT INTO falhas_atividades (
-      id, turno_id, numero_falha, local, situacao, status, prioridade,
+      id, turno_id, numero_falha, local, situacao, status,
       titulo_defeito, descricao_defeito, acoes_realizadas,
       proximo_turno_acompanhar, nome_registrou, nome_editou,
       created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
     item.id,
     item.turnoId,
     item.numeroFalha ?? null,
     item.local,
     item.situacao,
     item.status,
-    item.prioridade,
     item.tituloDefeito,
     item.descricaoDefeito,
     item.acoesRealizadas,
@@ -140,7 +132,6 @@ export async function atualizarFalha(item: FalhaAtividade) {
       local = ?,
       situacao = ?,
       status = ?,
-      prioridade = ?,
       titulo_defeito = ?,
       descricao_defeito = ?,
       acoes_realizadas = ?,
@@ -153,7 +144,6 @@ export async function atualizarFalha(item: FalhaAtividade) {
     atualizado.local,
     atualizado.situacao,
     atualizado.status,
-    atualizado.prioridade,
     atualizado.tituloDefeito,
     atualizado.descricaoDefeito,
     atualizado.acoesRealizadas,
@@ -169,4 +159,3 @@ export async function removerFalha(id: string) {
   const db = pegarBanco();
   await db.runAsync(`DELETE FROM falhas_atividades WHERE id = ?;`, id);
 }
-

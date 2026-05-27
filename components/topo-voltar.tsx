@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import type React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -7,22 +8,23 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 
 type Props = {
   titulo: string;
+  acaoDireita?: React.ReactNode;
 };
 
-export function TopoVoltar({ titulo }: Props) {
+export function TopoVoltar({ titulo, acaoDireita }: Props) {
   const corIcone = useThemeColor({}, 'text');
   const handleVoltar = () => {
     router.back();
   };
   return (
     <View style={styles.container}>
-      <Pressable onPress={handleVoltar} style={styles.botao}>
+      <Pressable onPress={handleVoltar} style={styles.botao} accessibilityLabel="Voltar">
         <IconSymbol name="chevron.left" size={22} color={corIcone} />
       </Pressable>
-      <ThemedText type="subtitle" style={styles.titulo}>
+      <ThemedText type="subtitle" style={styles.titulo} numberOfLines={1}>
         {titulo}
       </ThemedText>
-      <View style={styles.espaco} />
+      <View style={styles.ladoDireito}>{acaoDireita ?? <View style={styles.espaco} />}</View>
     </View>
   );
 }
@@ -30,7 +32,6 @@ export function TopoVoltar({ titulo }: Props) {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    marginBottom: 20,
     alignItems: 'center',
     justifyContent: 'space-between',
   },
@@ -45,8 +46,12 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
   },
+  ladoDireito: {
+    width: 44,
+    alignItems: 'flex-end',
+  },
   espaco: {
-    width: 70,
+    width: 44,
   },
 });
 

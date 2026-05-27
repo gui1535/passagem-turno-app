@@ -57,7 +57,7 @@ export default function ConfigPessoasTurnoScreen() {
     <TelaTeclado style={styles.container}>
       <TopoVoltar titulo="Pessoas do turno" />
 
-      <View style={styles.card}>
+      <View style={[styles.card, { marginTop: 20 }]}>
         <View style={styles.campo}>
           <CampoTexto
             label="Nome"

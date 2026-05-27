@@ -128,7 +128,7 @@ export default function ResponsaveisScreen() {
     <TelaTeclado style={styles.container}>
       <TopoVoltar titulo="Responsáveis" />
 
-      <View style={styles.card}>
+      <View style={[styles.card, { marginTop: 20 }]}>
         <ThemedText type="defaultSemiBold" style={styles.tituloSecao}>
           Pessoas cadastradas
         </ThemedText>

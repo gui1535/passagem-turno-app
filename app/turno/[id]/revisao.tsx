@@ -31,7 +31,7 @@ export default function RevisaoScreen() {
     <Tela style={styles.container}>
       <TopoVoltar titulo="Revisão" />
 
-      <View style={[styles.card, styles.secao]}>
+      <View style={[styles.card, styles.secao, { marginTop: 20 }]}>
         <ThemedText>
           <ThemedText type="defaultSemiBold">Turno:</ThemedText> {turno?.data ?? '-'}
         </ThemedText>

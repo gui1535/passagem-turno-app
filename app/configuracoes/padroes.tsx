@@ -57,7 +57,7 @@ export default function ConfigPadroesTurnoScreen() {
     <TelaTeclado style={styles.container}>
       <TopoVoltar titulo="Padrões de turno" />
 
-      <View style={styles.card}>
+      <View style={[styles.card, { marginTop: 20 }]}>
         <View style={styles.campo}>
           <CampoTexto
             label="Nome do turno"

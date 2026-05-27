@@ -28,7 +28,6 @@ export function montarHtmlRelatorio(dados: DadosRelatorio) {
           <div class="linha"><b>Local:</b> ${escapeHtml(f.local)}</div>
           <div class="linha"><b>Situação:</b> ${escapeHtml(f.situacao)}</div>
           <div class="linha"><b>Status:</b> ${escapeHtml(f.status)}</div>
-          <div class="linha"><b>Prioridade:</b> ${escapeHtml(f.prioridade)}</div>
           <div class="linha"><b>Título:</b> ${escapeHtml(f.tituloDefeito)}</div>
           <div class="linha"><b>Descrição:</b><br/>${escapeHtml(f.descricaoDefeito).replaceAll('\n', '<br/>')}</div>
           <div class="linha"><b>Ações:</b><br/>${escapeHtml(f.acoesRealizadas).replaceAll('\n', '<br/>')}</div>
@@ -60,7 +59,6 @@ export function montarHtmlRelatorio(dados: DadosRelatorio) {
       <div class="sub"><b>Data:</b> ${escapeHtml(turno.data)}</div>
       <div class="sub"><b>Início:</b> ${escapeHtml(turno.horaInicio ?? '-')} <b>Fim:</b> ${escapeHtml(turno.horaFim ?? '-')}</div>
       <div class="sub"><b>Localização:</b> ${escapeHtml(turno.localizacao)}</div>
-      <div class="sub"><b>Tipo:</b> ${escapeHtml(turno.tipoAtividade)}</div>
       <div class="sub"><b>Descrição do dia:</b><br/>${escapeHtml(turno.descricaoAtividadeDoDia).replaceAll('\n', '<br/>')}</div>
 
       <div class="secao"><b>Responsáveis</b></div>

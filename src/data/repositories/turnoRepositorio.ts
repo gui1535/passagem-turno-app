@@ -10,7 +10,6 @@ type LinhaTurno = {
   hora_fim: string | null;
   localizacao: string;
   descricao_atividade_dia: string;
-  tipo_atividade: string;
   status: string;
   created_at: string;
   updated_at: string;
@@ -24,7 +23,6 @@ function mapearTurno(l: LinhaTurno): Turno {
     horaFim: l.hora_fim ?? undefined,
     localizacao: l.localizacao,
     descricaoAtividadeDoDia: l.descricao_atividade_dia,
-    tipoAtividade: l.tipo_atividade as Turno['tipoAtividade'],
     status: l.status as Turno['status'],
     createdAt: l.created_at,
     updatedAt: l.updated_at,
@@ -63,15 +61,14 @@ export async function criarTurno(
 
   await db.runAsync(
     `INSERT INTO turnos (
-      id, data, hora_inicio, hora_fim, localizacao, descricao_atividade_dia, tipo_atividade, status, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+      id, data, hora_inicio, hora_fim, localizacao, descricao_atividade_dia, status, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
     turno.id,
     turno.data,
     turno.horaInicio ?? null,
     turno.horaFim ?? null,
     turno.localizacao,
     turno.descricaoAtividadeDoDia,
-    turno.tipoAtividade,
     turno.status,
     turno.createdAt,
     turno.updatedAt
@@ -91,7 +88,6 @@ export async function atualizarTurno(turno: Turno): Promise<void> {
       hora_fim = ?,
       localizacao = ?,
       descricao_atividade_dia = ?,
-      tipo_atividade = ?,
       status = ?,
       updated_at = ?
     WHERE id = ?;`,
@@ -100,7 +96,6 @@ export async function atualizarTurno(turno: Turno): Promise<void> {
     atualizado.horaFim ?? null,
     atualizado.localizacao,
     atualizado.descricaoAtividadeDoDia,
-    atualizado.tipoAtividade,
     atualizado.status,
     atualizado.updatedAt,
     atualizado.id

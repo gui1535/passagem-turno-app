@@ -8,7 +8,6 @@ import { TopoVoltar } from '@/components/topo-voltar';
 import { TelaTeclado } from '@/components/tela-teclado';
 import { ThemedText } from '@/components/themed-text';
 import { criarTurno, pegarConfiguracaoApp } from '@/src/data/repositories';
-import { TipoAtividade } from '@/src/domain/enums';
 
 export default function NovoTurnoScreen() {
   const [data, setData] = useState<Date | null>(new Date());
@@ -39,7 +38,6 @@ export default function NovoTurnoScreen() {
         : undefined,
       localizacao: localizacao.trim() || 'CCO',
       descricaoAtividadeDoDia: descricao.trim() || '',
-      tipoAtividade: TipoAtividade.Corretiva,
     });
 
     router.replace(`/turno/${turno.id}`);
@@ -49,7 +47,7 @@ export default function NovoTurnoScreen() {
     <TelaTeclado style={styles.container}>
       <TopoVoltar titulo="Novo turno" />
 
-      <View style={styles.campo}>
+      <View style={[styles.campo, { marginTop: 20 }]}>
         <CampoDataHora label="Data" modo="data" valor={data} onChange={setData} />
       </View>
       <View style={[styles.linha, styles.campo]}>

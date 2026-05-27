@@ -68,7 +68,7 @@ export default function PdfScreen() {
     <Tela style={styles.container}>
       <TopoVoltar titulo="PDF" />
 
-      <View style={[styles.card, styles.secao]}>
+      <View style={[styles.card, styles.secao, { marginTop: 20 }]}>
         <ThemedText>
           <ThemedText type="defaultSemiBold">Turno:</ThemedText> {turno?.data ?? '-'}
         </ThemedText>

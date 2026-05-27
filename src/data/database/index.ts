@@ -2,7 +2,7 @@ import * as SQLite from 'expo-sqlite';
 
 // Banco local (SQLite)
 export const NOME_BANCO = 'passagem_turno.db';
-export const VERSAO_BANCO = 2;
+export const VERSAO_BANCO = 4;
 
 let banco: SQLite.SQLiteDatabase | null = null;
 
@@ -30,6 +30,12 @@ export async function iniciarBanco() {
   }
   if (versaoAtual < 2) {
     await aplicarMigracaoV2(db);
+  }
+  if (versaoAtual < 3) {
+    await aplicarMigracaoV3(db);
+  }
+  if (versaoAtual < 4) {
+    await aplicarMigracaoV4(db);
   }
   await salvarVersao(db, VERSAO_BANCO);
 }
@@ -60,7 +66,6 @@ async function aplicarMigracaoV1(db: SQLite.SQLiteDatabase) {
       hora_fim TEXT,
       localizacao TEXT NOT NULL,
       descricao_atividade_dia TEXT NOT NULL,
-      tipo_atividade TEXT NOT NULL,
       status TEXT NOT NULL,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
@@ -82,7 +87,6 @@ async function aplicarMigracaoV1(db: SQLite.SQLiteDatabase) {
       local TEXT NOT NULL,
       situacao TEXT NOT NULL,
       status TEXT NOT NULL,
-      prioridade TEXT NOT NULL,
       titulo_defeito TEXT NOT NULL,
       descricao_defeito TEXT NOT NULL,
       acoes_realizadas TEXT NOT NULL,
@@ -126,7 +130,6 @@ async function aplicarMigracaoV1(db: SQLite.SQLiteDatabase) {
     CREATE INDEX IF NOT EXISTS idx_falhas_turno ON falhas_atividades(turno_id);
     CREATE INDEX IF NOT EXISTS idx_falhas_situacao ON falhas_atividades(situacao);
     CREATE INDEX IF NOT EXISTS idx_falhas_status ON falhas_atividades(status);
-    CREATE INDEX IF NOT EXISTS idx_falhas_prioridade ON falhas_atividades(prioridade);
     CREATE INDEX IF NOT EXISTS idx_falhas_local ON falhas_atividades(local);
     CREATE INDEX IF NOT EXISTS idx_falhas_registrou ON falhas_atividades(nome_registrou);
     CREATE INDEX IF NOT EXISTS idx_imagens_falha ON imagens_falha(falha_id);
@@ -152,5 +155,75 @@ async function aplicarMigracaoV2(db: SQLite.SQLiteDatabase) {
     );
 
     CREATE INDEX IF NOT EXISTS idx_pessoas_padrao_nome ON pessoas_padrao(nome);
+  `);
+}
+
+async function aplicarMigracaoV3(db: SQLite.SQLiteDatabase) {
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS turnos_nova (
+      id TEXT PRIMARY KEY NOT NULL,
+      data TEXT NOT NULL,
+      hora_inicio TEXT,
+      hora_fim TEXT,
+      localizacao TEXT NOT NULL,
+      descricao_atividade_dia TEXT NOT NULL,
+      status TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    INSERT INTO turnos_nova (
+      id, data, hora_inicio, hora_fim, localizacao, descricao_atividade_dia, status, created_at, updated_at
+    )
+    SELECT
+      id, data, hora_inicio, hora_fim, localizacao, descricao_atividade_dia, status, created_at, updated_at
+    FROM turnos;
+
+    DROP TABLE turnos;
+    ALTER TABLE turnos_nova RENAME TO turnos;
+  `);
+}
+
+async function aplicarMigracaoV4(db: SQLite.SQLiteDatabase) {
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS falhas_atividades_nova (
+      id TEXT PRIMARY KEY NOT NULL,
+      turno_id TEXT NOT NULL,
+      numero_falha TEXT,
+      local TEXT NOT NULL,
+      situacao TEXT NOT NULL,
+      status TEXT NOT NULL,
+      titulo_defeito TEXT NOT NULL,
+      descricao_defeito TEXT NOT NULL,
+      acoes_realizadas TEXT NOT NULL,
+      proximo_turno_acompanhar INTEGER NOT NULL,
+      nome_registrou TEXT NOT NULL,
+      nome_editou TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (turno_id) REFERENCES turnos(id) ON DELETE CASCADE
+    );
+
+    INSERT INTO falhas_atividades_nova (
+      id, turno_id, numero_falha, local, situacao, status,
+      titulo_defeito, descricao_defeito, acoes_realizadas,
+      proximo_turno_acompanhar, nome_registrou, nome_editou,
+      created_at, updated_at
+    )
+    SELECT
+      id, turno_id, numero_falha, local, situacao, status,
+      titulo_defeito, descricao_defeito, acoes_realizadas,
+      proximo_turno_acompanhar, nome_registrou, nome_editou,
+      created_at, updated_at
+    FROM falhas_atividades;
+
+    DROP TABLE falhas_atividades;
+    ALTER TABLE falhas_atividades_nova RENAME TO falhas_atividades;
+
+    CREATE INDEX IF NOT EXISTS idx_falhas_turno ON falhas_atividades(turno_id);
+    CREATE INDEX IF NOT EXISTS idx_falhas_situacao ON falhas_atividades(situacao);
+    CREATE INDEX IF NOT EXISTS idx_falhas_status ON falhas_atividades(status);
+    CREATE INDEX IF NOT EXISTS idx_falhas_local ON falhas_atividades(local);
+    CREATE INDEX IF NOT EXISTS idx_falhas_registrou ON falhas_atividades(nome_registrou);
   `);
 }
