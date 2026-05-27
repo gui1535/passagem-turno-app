@@ -58,28 +58,32 @@ export default function ConfigPadroesTurnoScreen() {
       <TopoVoltar titulo="Padrões de turno" />
 
       <View style={styles.card}>
-        <CampoTexto
-          label="Nome do turno"
-          value={nomeTurno}
-          onChangeText={(t) => {
-            setNomeTurno(t);
-            if (erros.nomeTurno) setErros((ant) => ({ ...ant, nomeTurno: '' }));
-          }}
-          obrigatorio
-          erro={erros.nomeTurno}
-        />
-        <CampoTexto
-          label="Localização padrão"
-          value={localizacaoPadrao}
-          onChangeText={(t) => {
-            setLocalizacaoPadrao(t);
-            if (erros.localizacaoPadrao) setErros((ant) => ({ ...ant, localizacaoPadrao: '' }));
-          }}
-          placeholder="Ex: CCO"
-          obrigatorio
-          erro={erros.localizacaoPadrao}
-        />
-        <View style={styles.linha}>
+        <View style={styles.campo}>
+          <CampoTexto
+            label="Nome do turno"
+            value={nomeTurno}
+            onChangeText={(t) => {
+              setNomeTurno(t);
+              if (erros.nomeTurno) setErros((ant) => ({ ...ant, nomeTurno: '' }));
+            }}
+            obrigatorio
+            erro={erros.nomeTurno}
+          />
+        </View>
+        <View style={styles.campo}>
+          <CampoTexto
+            label="Localização padrão"
+            value={localizacaoPadrao}
+            onChangeText={(t) => {
+              setLocalizacaoPadrao(t);
+              if (erros.localizacaoPadrao) setErros((ant) => ({ ...ant, localizacaoPadrao: '' }));
+            }}
+            placeholder="Ex: CCO"
+            obrigatorio
+            erro={erros.localizacaoPadrao}
+          />
+        </View>
+        <View style={[styles.linha, styles.campo]}>
           <View style={styles.coluna}>
             <CampoDataHora
               label="Início padrão"
@@ -130,13 +134,15 @@ function formatarHora(d: Date) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 12 },
+  container: { flex: 1, padding: 16 },
   card: {
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#687076',
     borderRadius: 12,
     padding: 12,
-    gap: 10,
+  },
+  campo: {
+    marginBottom: 20,
   },
   linha: { flexDirection: 'row', gap: 12 },
   coluna: { flex: 1 },

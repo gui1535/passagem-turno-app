@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Tela } from '@/components/tela';
+import { TopoVoltar } from '@/components/topo-voltar';
 import { ThemedText } from '@/components/themed-text';
 import type { FalhaAtividade, ImagemFalha, Responsavel, Turno } from '@/src/domain/types';
 import {
@@ -65,9 +66,9 @@ export default function PdfScreen() {
 
   return (
     <Tela style={styles.container}>
-      <ThemedText type="title">PDF</ThemedText>
+      <TopoVoltar titulo="PDF" />
 
-      <View style={styles.card}>
+      <View style={[styles.card, styles.secao]}>
         <ThemedText>
           <ThemedText type="defaultSemiBold">Turno:</ThemedText> {turno?.data ?? '-'}
         </ThemedText>
@@ -79,17 +80,21 @@ export default function PdfScreen() {
         </ThemedText>
       </View>
 
-      <Pressable style={styles.botao} onPress={gerar} disabled={carregando}>
-        <ThemedText type="defaultSemiBold" style={styles.botaoTexto}>
-          {carregando ? 'Gerando...' : 'Gerar PDF'}
-        </ThemedText>
-      </Pressable>
+      <View style={styles.secao}>
+        <Pressable style={styles.botao} onPress={gerar} disabled={carregando}>
+          <ThemedText type="defaultSemiBold" style={styles.botaoTexto}>
+            {carregando ? 'Gerando...' : 'Gerar PDF'}
+          </ThemedText>
+        </Pressable>
+      </View>
 
-      <Pressable style={[styles.botao, !uriPdf && styles.botaoDesativado]} onPress={compartilhar} disabled={!uriPdf}>
-        <ThemedText type="defaultSemiBold" style={styles.botaoTexto}>
-          Compartilhar
-        </ThemedText>
-      </Pressable>
+      <View style={styles.secao}>
+        <Pressable style={[styles.botao, !uriPdf && styles.botaoDesativado]} onPress={compartilhar} disabled={!uriPdf}>
+          <ThemedText type="defaultSemiBold" style={styles.botaoTexto}>
+            Compartilhar
+          </ThemedText>
+        </Pressable>
+      </View>
 
       {uriPdf ? <ThemedText style={styles.mini}>Arquivo: {uriPdf}</ThemedText> : null}
     </Tela>
@@ -97,7 +102,10 @@ export default function PdfScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 12 },
+  container: { flex: 1, padding: 16 },
+  secao: {
+    marginBottom: 20,
+  },
   card: {
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#687076',
@@ -117,4 +125,3 @@ const styles = StyleSheet.create({
   botaoTexto: { color: '#fff' },
   mini: { opacity: 0.75 },
 });
-

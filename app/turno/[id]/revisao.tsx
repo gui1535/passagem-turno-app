@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Tela } from '@/components/tela';
+import { TopoVoltar } from '@/components/topo-voltar';
 import { ThemedText } from '@/components/themed-text';
 import type { FalhaAtividade, Responsavel, Turno } from '@/src/domain/types';
 import { listarFalhas, listarResponsaveis, pegarTurnoPorId } from '@/src/data/repositories';
@@ -28,9 +29,9 @@ export default function RevisaoScreen() {
 
   return (
     <Tela style={styles.container}>
-      <ThemedText type="title">Revisão</ThemedText>
+      <TopoVoltar titulo="Revisão" />
 
-      <View style={styles.card}>
+      <View style={[styles.card, styles.secao]}>
         <ThemedText>
           <ThemedText type="defaultSemiBold">Turno:</ThemedText> {turno?.data ?? '-'}
         </ThemedText>
@@ -50,7 +51,10 @@ export default function RevisaoScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 12 },
+  container: { flex: 1, padding: 16 },
+  secao: {
+    marginBottom: 20,
+  },
   card: {
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#687076',
@@ -60,4 +64,3 @@ const styles = StyleSheet.create({
   },
   mini: { opacity: 0.75 },
 });
-

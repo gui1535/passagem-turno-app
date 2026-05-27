@@ -4,9 +4,10 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { CampoDataHora } from '@/components/campo-data-hora';
 import { CampoTexto } from '@/components/campo-texto';
+import { TopoVoltar } from '@/components/topo-voltar';
 import { TelaTeclado } from '@/components/tela-teclado';
 import { ThemedText } from '@/components/themed-text';
-import { criarResponsavel, criarTurno, listarPessoasPadrao, pegarConfiguracaoApp } from '@/src/data/repositories';
+import { criarTurno, pegarConfiguracaoApp } from '@/src/data/repositories';
 import { TipoAtividade } from '@/src/domain/enums';
 
 export default function NovoTurnoScreen() {
@@ -41,25 +42,17 @@ export default function NovoTurnoScreen() {
       tipoAtividade: TipoAtividade.Corretiva,
     });
 
-    const pessoas = await listarPessoasPadrao();
-    for (const p of pessoas) {
-      await criarResponsavel({
-        turnoId: turno.id,
-        nome: p.nome,
-        empresa: p.empresa,
-        empresaOutra: p.empresaOutra,
-      });
-    }
-
     router.replace(`/turno/${turno.id}`);
   }
 
   return (
     <TelaTeclado style={styles.container}>
-      <ThemedText type="title">Novo turno</ThemedText>
+      <TopoVoltar titulo="Novo turno" />
 
-      <CampoDataHora label="Data" modo="data" valor={data} onChange={setData} />
-      <View style={styles.linha}>
+      <View style={styles.campo}>
+        <CampoDataHora label="Data" modo="data" valor={data} onChange={setData} />
+      </View>
+      <View style={[styles.linha, styles.campo]}>
         <View style={styles.coluna}>
           <CampoDataHora label="Início" modo="hora" valor={horaInicio} onChange={setHoraInicio} />
         </View>
@@ -67,14 +60,18 @@ export default function NovoTurnoScreen() {
           <CampoDataHora label="Fim" modo="hora" valor={horaFim} onChange={setHoraFim} />
         </View>
       </View>
-      <CampoTexto label="Localização" value={localizacao} onChangeText={setLocalizacao} placeholder="Ex: CCO" />
-      <CampoTexto
-        label="Descrição do dia"
-        value={descricao}
-        onChangeText={setDescricao}
-        placeholder="O que aconteceu no turno"
-        multiline
-      />
+      <View style={styles.campo}>
+        <CampoTexto label="Localização" value={localizacao} onChangeText={setLocalizacao} placeholder="Ex: CCO" />
+      </View>
+      <View style={styles.campo}>
+        <CampoTexto
+          label="Descrição do dia"
+          value={descricao}
+          onChangeText={setDescricao}
+          placeholder="O que aconteceu no turno"
+          multiline
+        />
+      </View>
 
       <Pressable style={styles.botao} onPress={salvar}>
         <ThemedText type="defaultSemiBold" style={styles.botaoTexto}>
@@ -89,7 +86,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    gap: 12,
+  },
+  campo: {
+    marginBottom: 20,
   },
   linha: {
     flexDirection: 'row',

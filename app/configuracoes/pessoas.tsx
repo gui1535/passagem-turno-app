@@ -58,29 +58,35 @@ export default function ConfigPessoasTurnoScreen() {
       <TopoVoltar titulo="Pessoas do turno" />
 
       <View style={styles.card}>
-        <CampoTexto
-          label="Nome"
-          value={pessoaNome}
-          onChangeText={(t) => {
-            setPessoaNome(t);
-            if (errosPessoa.nome) setErrosPessoa((ant) => ({ ...ant, nome: '' }));
-          }}
-          obrigatorio
-          erro={errosPessoa.nome}
-        />
-        <SelectEmpresa label="Empresa" value={pessoaEmpresa} onChange={setPessoaEmpresa} obrigatorio />
-        {pessoaEmpresa === Empresa.Outros ? (
+        <View style={styles.campo}>
           <CampoTexto
-            label="Qual empresa?"
-            value={pessoaEmpresaOutros}
+            label="Nome"
+            value={pessoaNome}
             onChangeText={(t) => {
-              setPessoaEmpresaOutros(t);
-              if (errosPessoa.empresaOutros) setErrosPessoa((ant) => ({ ...ant, empresaOutros: '' }));
+              setPessoaNome(t);
+              if (errosPessoa.nome) setErrosPessoa((ant) => ({ ...ant, nome: '' }));
             }}
-            placeholder="Digite a empresa"
             obrigatorio
-            erro={errosPessoa.empresaOutros}
+            erro={errosPessoa.nome}
           />
+        </View>
+        <View style={styles.campo}>
+          <SelectEmpresa label="Empresa" value={pessoaEmpresa} onChange={setPessoaEmpresa} obrigatorio />
+        </View>
+        {pessoaEmpresa === Empresa.Outros ? (
+          <View style={styles.campo}>
+            <CampoTexto
+              label="Qual empresa?"
+              value={pessoaEmpresaOutros}
+              onChangeText={(t) => {
+                setPessoaEmpresaOutros(t);
+                if (errosPessoa.empresaOutros) setErrosPessoa((ant) => ({ ...ant, empresaOutros: '' }));
+              }}
+              placeholder="Digite a empresa"
+              obrigatorio
+              erro={errosPessoa.empresaOutros}
+            />
+          </View>
         ) : null}
 
         <Pressable style={styles.botao} onPress={adicionar}>
@@ -91,7 +97,7 @@ export default function ConfigPessoasTurnoScreen() {
       </View>
 
       <View style={styles.card}>
-        <ThemedText type="defaultSemiBold">Lista</ThemedText>
+        <ThemedText type="defaultSemiBold" style={styles.tituloLista}>Lista</ThemedText>
         {pessoas.length === 0 ? (
           <ThemedText>Nenhuma pessoa cadastrada.</ThemedText>
         ) : (
@@ -116,13 +122,15 @@ export default function ConfigPessoasTurnoScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 12 },
+  container: { flex: 1, padding: 16 },
   card: {
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#687076',
     borderRadius: 12,
     padding: 12,
-    gap: 10,
+    marginBottom: 20,
+  },
+  campo: {
     marginBottom: 20,
   },
   botao: {
@@ -140,6 +148,7 @@ const styles = StyleSheet.create({
     borderColor: '#687076',
     borderRadius: 12,
     padding: 12,
+    marginBottom: 12,
   },
   botaoExcluir: {
     paddingVertical: 6,
@@ -148,5 +157,7 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#687076',
   },
+  tituloLista: {
+    marginBottom: 12,
+  },
 });
-
