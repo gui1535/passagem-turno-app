@@ -2,7 +2,7 @@ import * as SQLite from 'expo-sqlite';
 
 // Banco local (SQLite)
 export const NOME_BANCO = 'passagem_turno.db';
-export const VERSAO_BANCO = 1;
+export const VERSAO_BANCO = 2;
 
 let banco: SQLite.SQLiteDatabase | null = null;
 
@@ -25,10 +25,13 @@ export async function iniciarBanco() {
   `);
 
   const versaoAtual = await pegarVersao(db);
-  if (versaoAtual === 0) {
+  if (versaoAtual < 1) {
     await aplicarMigracaoV1(db);
-    await salvarVersao(db, VERSAO_BANCO);
   }
+  if (versaoAtual < 2) {
+    await aplicarMigracaoV2(db);
+  }
+  await salvarVersao(db, VERSAO_BANCO);
 }
 
 async function pegarVersao(db: SQLite.SQLiteDatabase) {
@@ -128,5 +131,26 @@ async function aplicarMigracaoV1(db: SQLite.SQLiteDatabase) {
     CREATE INDEX IF NOT EXISTS idx_falhas_registrou ON falhas_atividades(nome_registrou);
     CREATE INDEX IF NOT EXISTS idx_imagens_falha ON imagens_falha(falha_id);
     CREATE INDEX IF NOT EXISTS idx_hist_entidade ON historico_edicao(entidade, entidade_id);
+  `);
+}
+
+async function aplicarMigracaoV2(db: SQLite.SQLiteDatabase) {
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS configuracao_app (
+      id TEXT PRIMARY KEY NOT NULL,
+      nome_turno TEXT NOT NULL,
+      hora_inicio_padrao TEXT,
+      hora_fim_padrao TEXT,
+      localizacao_padrao TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS pessoas_padrao (
+      id TEXT PRIMARY KEY NOT NULL,
+      nome TEXT NOT NULL,
+      empresa TEXT NOT NULL,
+      empresa_outra TEXT
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_pessoas_padrao_nome ON pessoas_padrao(nome);
   `);
 }

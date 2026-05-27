@@ -1,11 +1,12 @@
-import { router } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { CampoDataHora } from '@/components/campo-data-hora';
-import { Tela } from '@/components/tela';
+import { CampoTexto } from '@/components/campo-texto';
+import { TelaTeclado } from '@/components/tela-teclado';
 import { ThemedText } from '@/components/themed-text';
-import { criarTurno } from '@/src/data/repositories';
+import { criarResponsavel, criarTurno, listarPessoasPadrao, pegarConfiguracaoApp } from '@/src/data/repositories';
 import { TipoAtividade } from '@/src/domain/enums';
 
 export default function NovoTurnoScreen() {
@@ -14,6 +15,17 @@ export default function NovoTurnoScreen() {
   const [horaFim, setHoraFim] = useState<Date | null>(null);
   const [localizacao, setLocalizacao] = useState('');
   const [descricao, setDescricao] = useState('');
+
+  const carregarPadroes = useCallback(() => {
+    void (async () => {
+      const cfg = await pegarConfiguracaoApp();
+      if (cfg?.localizacaoPadrao) setLocalizacao(cfg.localizacaoPadrao);
+      if (cfg?.horaInicioPadrao) setHoraInicio(parseHora(cfg.horaInicioPadrao));
+      if (cfg?.horaFimPadrao) setHoraFim(parseHora(cfg.horaFimPadrao));
+    })();
+  }, []);
+
+  useFocusEffect(carregarPadroes);
 
   async function salvar() {
     const turno = await criarTurno({
@@ -28,11 +40,22 @@ export default function NovoTurnoScreen() {
       descricaoAtividadeDoDia: descricao.trim() || '',
       tipoAtividade: TipoAtividade.Corretiva,
     });
+
+    const pessoas = await listarPessoasPadrao();
+    for (const p of pessoas) {
+      await criarResponsavel({
+        turnoId: turno.id,
+        nome: p.nome,
+        empresa: p.empresa,
+        empresaOutra: p.empresaOutra,
+      });
+    }
+
     router.replace(`/turno/${turno.id}`);
   }
 
   return (
-    <Tela style={styles.container}>
+    <TelaTeclado style={styles.container}>
       <ThemedText type="title">Novo turno</ThemedText>
 
       <CampoDataHora label="Data" modo="data" valor={data} onChange={setData} />
@@ -44,8 +67,8 @@ export default function NovoTurnoScreen() {
           <CampoDataHora label="Fim" modo="hora" valor={horaFim} onChange={setHoraFim} />
         </View>
       </View>
-      <Campo label="Localização" value={localizacao} onChangeText={setLocalizacao} placeholder="Ex: CCO" />
-      <Campo
+      <CampoTexto label="Localização" value={localizacao} onChangeText={setLocalizacao} placeholder="Ex: CCO" />
+      <CampoTexto
         label="Descrição do dia"
         value={descricao}
         onChangeText={setDescricao}
@@ -58,29 +81,7 @@ export default function NovoTurnoScreen() {
           Salvar e continuar
         </ThemedText>
       </Pressable>
-    </Tela>
-  );
-}
-
-function Campo(props: {
-  label: string;
-  value: string;
-  onChangeText: (t: string) => void;
-  placeholder?: string;
-  multiline?: boolean;
-}) {
-  return (
-    <View style={styles.campo}>
-      <ThemedText type="defaultSemiBold">{props.label}</ThemedText>
-      <TextInput
-        value={props.value}
-        onChangeText={props.onChangeText}
-        placeholder={props.placeholder}
-        placeholderTextColor="#687076"
-        style={[styles.input, props.multiline ? styles.inputMultiline : null]}
-        multiline={props.multiline}
-      />
-    </View>
+    </TelaTeclado>
   );
 }
 
@@ -97,21 +98,6 @@ const styles = StyleSheet.create({
   coluna: {
     flex: 1,
   },
-  campo: {
-    gap: 6,
-  },
-  input: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#687076',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    color: '#111',
-  },
-  inputMultiline: {
-    minHeight: 90,
-    textAlignVertical: 'top',
-  },
   botao: {
     marginTop: 8,
     backgroundColor: '#0a7ea4',
@@ -123,4 +109,11 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
 });
+
+function parseHora(hhmm: string) {
+  const [hh, mm] = hhmm.split(':').map((x) => Number(x));
+  const d = new Date();
+  d.setHours(hh || 0, mm || 0, 0, 0);
+  return d;
+}
 

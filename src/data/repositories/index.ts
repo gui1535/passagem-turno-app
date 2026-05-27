@@ -5,3 +5,4 @@ export * from './falhaRepositorio';
 export * from './imagemRepositorio';
 export * from './historicoRepositorio';
 export * from './modeloTextoRepositorio';
+export * from './configuracaoRepositorio';

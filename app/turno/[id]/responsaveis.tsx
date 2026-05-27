@@ -1,16 +1,17 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Tela } from '@/components/tela';
+import { CampoTexto } from '@/components/campo-texto';
+import { TelaTeclado } from '@/components/tela-teclado';
 import { ThemedText } from '@/components/themed-text';
+import {
+    criarResponsavel,
+    listarResponsaveis,
+    removerResponsavel,
+} from '@/src/data/repositories';
 import { Empresa } from '@/src/domain/enums';
 import type { Responsavel } from '@/src/domain/types';
-import {
-  criarResponsavel,
-  listarResponsaveis,
-  removerResponsavel,
-} from '@/src/data/repositories';
 
 export default function ResponsaveisScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -50,24 +51,17 @@ export default function ResponsaveisScreen() {
   }
 
   return (
-    <Tela style={styles.container}>
+    <TelaTeclado style={styles.container}>
       <ThemedText type="title">Responsáveis</ThemedText>
 
       <View style={styles.card}>
         <ThemedText type="defaultSemiBold">Adicionar</ThemedText>
-        <TextInput
-          value={nome}
-          onChangeText={setNome}
-          placeholder="Nome"
-          placeholderTextColor="#687076"
-          style={styles.input}
-        />
-        <TextInput
+        <CampoTexto label="Nome" value={nome} onChangeText={setNome} placeholder="Nome" />
+        <CampoTexto
+          label="Empresa (opcional)"
           value={empresaOutra}
           onChangeText={setEmpresaOutra}
           placeholder="Empresa (opcional)"
-          placeholderTextColor="#687076"
-          style={styles.input}
         />
         <Pressable style={styles.botao} onPress={adicionar}>
           <ThemedText type="defaultSemiBold" style={styles.botaoTexto}>
@@ -96,7 +90,7 @@ export default function ResponsaveisScreen() {
           ))
         )}
       </View>
-    </Tela>
+    </TelaTeclado>
   );
 }
 
@@ -108,14 +102,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
     gap: 8,
-  },
-  input: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#687076',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    color: '#111',
   },
   botao: {
     backgroundColor: '#0a7ea4',

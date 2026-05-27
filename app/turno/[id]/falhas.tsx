@@ -1,12 +1,13 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Tela } from '@/components/tela';
+import { CampoTexto } from '@/components/campo-texto';
+import { TelaTeclado } from '@/components/tela-teclado';
 import { ThemedText } from '@/components/themed-text';
+import { criarFalha, listarFalhas, removerFalha } from '@/src/data/repositories';
 import { Prioridade, SituacaoFalha, StatusFalha } from '@/src/domain/enums';
 import type { FalhaAtividade } from '@/src/domain/types';
-import { criarFalha, listarFalhas, removerFalha } from '@/src/data/repositories';
 
 export default function FalhasScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -56,31 +57,23 @@ export default function FalhasScreen() {
   }
 
   return (
-    <Tela style={styles.container}>
+    <TelaTeclado style={styles.container}>
       <ThemedText type="title">Falhas/atividades</ThemedText>
 
       <View style={styles.card}>
         <ThemedText type="defaultSemiBold">Adicionar</ThemedText>
-        <TextInput
+        <CampoTexto
+          label="Título do defeito"
           value={titulo}
           onChangeText={setTitulo}
           placeholder="Título do defeito"
-          placeholderTextColor="#687076"
-          style={styles.input}
         />
-        <TextInput
-          value={local}
-          onChangeText={setLocal}
-          placeholder="Local"
-          placeholderTextColor="#687076"
-          style={styles.input}
-        />
-        <TextInput
+        <CampoTexto label="Local" value={local} onChangeText={setLocal} placeholder="Local" />
+        <CampoTexto
+          label="Quem registrou"
           value={registrou}
           onChangeText={setRegistrou}
           placeholder="Quem registrou"
-          placeholderTextColor="#687076"
-          style={styles.input}
         />
         <Pressable style={styles.botao} onPress={adicionar}>
           <ThemedText type="defaultSemiBold" style={styles.botaoTexto}>
@@ -116,7 +109,7 @@ export default function FalhasScreen() {
           ))
         )}
       </View>
-    </Tela>
+    </TelaTeclado>
   );
 }
 
@@ -128,14 +121,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
     gap: 8,
-  },
-  input: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#687076',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    color: '#111',
   },
   botao: {
     backgroundColor: '#0a7ea4',

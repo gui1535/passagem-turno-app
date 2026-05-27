@@ -1,11 +1,12 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Tela } from '@/components/tela';
+import { CampoTexto } from '@/components/campo-texto';
+import { TelaTeclado } from '@/components/tela-teclado';
 import { ThemedText } from '@/components/themed-text';
-import type { FalhaAtividade } from '@/src/domain/types';
 import { atualizarFalha, pegarFalhaPorId } from '@/src/data/repositories';
+import type { FalhaAtividade } from '@/src/domain/types';
 
 export default function FalhaDetalheScreen() {
   const { falhaId } = useLocalSearchParams<{ falhaId: string }>();
@@ -34,7 +35,7 @@ export default function FalhaDetalheScreen() {
   }
 
   return (
-    <Tela style={styles.container}>
+    <TelaTeclado style={styles.container}>
       <ThemedText type="title">Falha</ThemedText>
       {falha ? (
         <View style={styles.card}>
@@ -48,36 +49,28 @@ export default function FalhaDetalheScreen() {
         <ThemedText>Carregando...</ThemedText>
       )}
 
-      <View style={styles.campo}>
-        <ThemedText type="defaultSemiBold">Descrição</ThemedText>
-        <TextInput
-          value={descricao}
-          onChangeText={setDescricao}
-          multiline
-          placeholder="Descrição do defeito"
-          placeholderTextColor="#687076"
-          style={[styles.input, styles.multiline]}
-        />
-      </View>
+      <CampoTexto
+        label="Descrição"
+        value={descricao}
+        onChangeText={setDescricao}
+        placeholder="Descrição do defeito"
+        multiline
+      />
 
-      <View style={styles.campo}>
-        <ThemedText type="defaultSemiBold">Ações</ThemedText>
-        <TextInput
-          value={acoes}
-          onChangeText={setAcoes}
-          multiline
-          placeholder="Ações realizadas"
-          placeholderTextColor="#687076"
-          style={[styles.input, styles.multiline]}
-        />
-      </View>
+      <CampoTexto
+        label="Ações"
+        value={acoes}
+        onChangeText={setAcoes}
+        placeholder="Ações realizadas"
+        multiline
+      />
 
       <Pressable style={styles.botao} onPress={salvar}>
         <ThemedText type="defaultSemiBold" style={styles.botaoTexto}>
           Salvar
         </ThemedText>
       </Pressable>
-    </Tela>
+    </TelaTeclado>
   );
 }
 
@@ -91,16 +84,6 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   mini: { opacity: 0.75 },
-  campo: { gap: 6 },
-  input: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#687076',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    color: '#111',
-  },
-  multiline: { minHeight: 90, textAlignVertical: 'top' },
   botao: {
     backgroundColor: '#0a7ea4',
     paddingVertical: 12,

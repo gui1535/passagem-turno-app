@@ -73,3 +73,17 @@ export type ModeloTexto = {
   descricaoPadrao: string;
   acoesComunsPadrao: string;
 };
+
+export type ConfiguracaoApp = {
+  nomeTurno: string;
+  horaInicioPadrao?: string;
+  horaFimPadrao?: string;
+  localizacaoPadrao: string;
+};
+
+export type PessoaPadrao = {
+  id: string;
+  nome: string;
+  empresa: Responsavel['empresa'];
+  empresaOutra?: string;
+};

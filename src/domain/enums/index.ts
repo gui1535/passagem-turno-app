@@ -10,6 +10,8 @@ export enum Empresa {
   CPTM = 'CPTM',
   Trivia = 'Trivia',
   Alstom = 'Alstom',
+  Siemens = 'Siemens',
+  Outros = 'Outros',
   Outra = 'Outra',
 }
 

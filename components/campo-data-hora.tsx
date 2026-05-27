@@ -9,10 +9,13 @@ type Props = {
   modo: 'data' | 'hora';
   valor: Date | null;
   onChange: (v: Date | null) => void;
+  obrigatorio?: boolean;
+  erro?: string | null;
 };
 
-export function CampoDataHora({ label, modo, valor, onChange }: Props) {
+export function CampoDataHora({ label, modo, valor, onChange, obrigatorio, erro }: Props) {
   const [aberto, setAberto] = useState(false);
+  const temErro = !!erro;
 
   const texto = useMemo(() => {
     if (!valor) return modo === 'data' ? 'Selecionar' : 'Selecionar';
@@ -39,11 +42,15 @@ export function CampoDataHora({ label, modo, valor, onChange }: Props) {
 
   return (
     <View style={styles.container}>
-      <ThemedText type="defaultSemiBold">{label}</ThemedText>
+      <ThemedText type="defaultSemiBold">
+        {label}
+        {obrigatorio ? ' *' : ''}
+      </ThemedText>
 
-      <Pressable style={styles.botaoCampo} onPress={abrir}>
+      <Pressable style={[styles.botaoCampo, temErro ? styles.botaoCampoErro : null]} onPress={abrir}>
         <ThemedText>{texto}</ThemedText>
       </Pressable>
+      {temErro ? <ThemedText style={styles.textoErro}>{erro}</ThemedText> : null}
 
       {Platform.OS === 'android' && aberto ? (
         <DateTimePicker
@@ -89,6 +96,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 12,
+  },
+  botaoCampoErro: {
+    borderColor: '#d32f2f',
+  },
+  textoErro: {
+    color: '#d32f2f',
+    fontSize: 12,
   },
   fundoModal: {
     flex: 1,
