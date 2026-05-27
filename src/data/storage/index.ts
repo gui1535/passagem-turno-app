@@ -1,4 +1,4 @@
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 
 // Arquivos locais (imagens, PDFs)
 export const PASTA_IMAGENS = 'passagem-turno/imagens';
@@ -9,9 +9,9 @@ function garantirBarraFinal(uri: string) {
 }
 
 function uriDocumentos() {
-  const base = (FileSystem as any).documentDirectory ?? FileSystem.Paths.document.uri;
+  const base = FileSystem.documentDirectory;
   if (!base) throw new Error('pasta de documentos indisponível');
-  return garantirBarraFinal(String(base));
+  return garantirBarraFinal(base);
 }
 
 export function uriPastaImagens() {
