@@ -1,4 +1,4 @@
-import type { ImagemFalha } from '@/src/domain/types';
+import type { ImagemAtividade } from '@/src/domain/types';
 import { pegarBanco } from '@/src/data/database';
 import { agoraIso, criarId } from '@/src/utils/geral';
 
@@ -10,33 +10,33 @@ type LinhaImagem = {
   created_at: string;
 };
 
-function mapearImagem(l: LinhaImagem): ImagemFalha {
+function mapearImagem(l: LinhaImagem): ImagemAtividade {
   return {
     id: l.id,
-    falhaId: l.falha_id,
+    atividadeId: l.falha_id,
     uri: l.uri,
     legenda: l.legenda ?? undefined,
     createdAt: l.created_at,
   };
 }
 
-export async function listarImagensDaFalha(falhaId: string) {
+export async function listarImagensDaAtividade(atividadeId: string) {
   const db = pegarBanco();
   const linhas = await db.getAllAsync<LinhaImagem>(
     `SELECT * FROM imagens_falha WHERE falha_id = ? ORDER BY created_at ASC;`,
-    falhaId
+    atividadeId
   );
   return linhas.map(mapearImagem);
 }
 
-export async function criarImagemFalha(dados: Omit<ImagemFalha, 'id' | 'createdAt'>) {
+export async function criarImagemAtividade(dados: Omit<ImagemAtividade, 'id' | 'createdAt'>) {
   const db = pegarBanco();
-  const item: ImagemFalha = { ...dados, id: criarId(), createdAt: agoraIso() };
+  const item: ImagemAtividade = { ...dados, id: criarId(), createdAt: agoraIso() };
 
   await db.runAsync(
     `INSERT INTO imagens_falha (id, falha_id, uri, legenda, created_at) VALUES (?, ?, ?, ?, ?);`,
     item.id,
-    item.falhaId,
+    item.atividadeId,
     item.uri,
     item.legenda ?? null,
     item.createdAt
@@ -54,4 +54,3 @@ export async function removerImagem(id: string) {
   const db = pegarBanco();
   await db.runAsync(`DELETE FROM imagens_falha WHERE id = ?;`, id);
 }
-

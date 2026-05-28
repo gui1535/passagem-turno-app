@@ -1,2 +1,2 @@
-// Lógica por funcionalidade (turnos, falhas, pdf, etc.)
+// Lógica por funcionalidade (turnos, atividades, pdf, etc.)
 export {};

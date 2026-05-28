@@ -1,8 +1,8 @@
 import type {
   Empresa,
   EntidadeHistorico,
-  SituacaoFalha,
-  StatusFalha,
+  SituacaoAtividade,
+  StatusAtividade,
   StatusTurno,
   TipoManutencaoTurno,
 } from '@/src/domain/enums';
@@ -28,13 +28,13 @@ export type Responsavel = {
   empresaOutra?: string;
 };
 
-export type FalhaAtividade = {
+export type Atividade = {
   id: string;
   turnoId: string;
-  numeroFalha?: string;
+  numeroAtividade?: string;
   local: string;
-  situacao: SituacaoFalha;
-  status: StatusFalha;
+  situacao: SituacaoAtividade;
+  status: StatusAtividade;
   tituloDefeito: string;
   descricaoDefeito: string;
   acoesRealizadas: string;
@@ -44,9 +44,9 @@ export type FalhaAtividade = {
   updatedAt: string;
 };
 
-export type ImagemFalha = {
+export type ImagemAtividade = {
   id: string;
-  falhaId: string;
+  atividadeId: string;
   uri: string;
   legenda?: string;
   createdAt: string;

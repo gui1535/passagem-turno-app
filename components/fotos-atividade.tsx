@@ -7,18 +7,18 @@ import Toast from 'react-native-toast-message';
 import { ThemedText } from '@/components/themed-text';
 import { VisualizadorImagem } from '@/components/visualizador-imagem';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { atualizarLegendaImagem, listarImagensDaFalha, removerImagem } from '@/src/data/repositories';
+import { atualizarLegendaImagem, listarImagensDaAtividade, removerImagem } from '@/src/data/repositories';
 import { apagarArquivo } from '@/src/data/storage';
-import type { ImagemFalha } from '@/src/domain/types';
+import type { ImagemAtividade } from '@/src/domain/types';
 import {
-  capturarFotoParaFalha,
-  enviarImagensParaFalha,
-  type ResultadoImagemFalha,
+  capturarFotoParaAtividade,
+  enviarImagensParaAtividade,
+  type ResultadoImagemAtividade,
   type ResultadoUploadImagens,
-} from '@/src/features/imagens/adicionarImagemFalha';
+} from '@/src/features/imagens/adicionarImagemAtividade';
 
 type Props = {
-  falhaId: string;
+  atividadeId: string;
   /** Quando dentro de um card pai, oculta título e margem externa */
   semCabecalho?: boolean;
 };
@@ -32,7 +32,7 @@ function formatarLegendaThumb(legenda?: string): string | null {
   return `${texto.slice(0, MAX_LEGENDA_THUMB - 3)}...`;
 }
 
-function tratarResultado(resultado: ResultadoImagemFalha, sucesso: string) {
+function tratarResultado(resultado: ResultadoImagemAtividade, sucesso: string) {
   if (resultado === 'ok') {
     Toast.show({ type: 'success', text1: sucesso, position: 'top', visibilityTime: 2000 });
     return true;
@@ -70,17 +70,17 @@ function tratarUpload(resultado: ResultadoUploadImagens) {
   return false;
 }
 
-export function FotosFalha({ falhaId, semCabecalho }: Props) {
+export function FotosAtividade({ atividadeId, semCabecalho }: Props) {
   const corIconeAcao = useThemeColor({}, 'tint');
-  const [imagens, setImagens] = useState<ImagemFalha[]>([]);
+  const [imagens, setImagens] = useState<ImagemAtividade[]>([]);
   const [enviando, setEnviando] = useState(false);
-  const [imagemVisualizando, setImagemVisualizando] = useState<ImagemFalha | null>(null);
+  const [imagemVisualizando, setImagemVisualizando] = useState<ImagemAtividade | null>(null);
 
   const carregar = useCallback(() => {
     void (async () => {
-      setImagens(await listarImagensDaFalha(falhaId));
+      setImagens(await listarImagensDaAtividade(atividadeId));
     })();
-  }, [falhaId]);
+  }, [atividadeId]);
 
   useFocusEffect(
     useCallback(() => {
@@ -88,7 +88,7 @@ export function FotosFalha({ falhaId, semCabecalho }: Props) {
     }, [carregar])
   );
 
-  function confirmarExclusao(img: ImagemFalha) {
+  function confirmarExclusao(img: ImagemAtividade) {
     Alert.alert('Remover foto', 'Tem certeza que deseja remover esta foto?', [
       { text: 'Cancelar', style: 'cancel' },
       {
@@ -110,7 +110,7 @@ export function FotosFalha({ falhaId, semCabecalho }: Props) {
     if (enviando) return;
     setEnviando(true);
     try {
-      const ok = tratarUpload(await enviarImagensParaFalha(falhaId));
+      const ok = tratarUpload(await enviarImagensParaAtividade(atividadeId));
       if (ok) carregar();
     } finally {
       setEnviando(false);
@@ -194,8 +194,8 @@ export function FotosFalha({ falhaId, semCabecalho }: Props) {
   );
 }
 
-export async function tirarFotoDaFalha(falhaId: string): Promise<boolean> {
-  return tratarResultado(await capturarFotoParaFalha(falhaId), 'Foto adicionada');
+export async function tirarFotoDaAtividade(atividadeId: string): Promise<boolean> {
+  return tratarResultado(await capturarFotoParaAtividade(atividadeId), 'Foto adicionada');
 }
 
 const styles = StyleSheet.create({

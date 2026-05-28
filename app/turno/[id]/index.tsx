@@ -11,18 +11,18 @@ import { TopoVoltar } from '@/components/topo-voltar';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors, corBotao } from '@/constants/theme';
 import {
-  criarFalha,
-  listarFalhas,
+  criarAtividade,
+  listarAtividades,
   listarResponsaveis,
   pegarTurnoPorId,
-  removerFalha,
+  removerAtividade,
 } from '@/src/data/repositories';
-import { SituacaoFalha, StatusFalha } from '@/src/domain/enums';
-import type { FalhaAtividade, Turno } from '@/src/domain/types';
-import { capturarFotoParaFalha } from '@/src/features/imagens/adicionarImagemFalha';
+import { SituacaoAtividade, StatusAtividade } from '@/src/domain/enums';
+import type { Atividade, Turno } from '@/src/domain/types';
+import { capturarFotoParaAtividade } from '@/src/features/imagens/adicionarImagemAtividade';
 
-const OPCOES_SITUACAO = Object.values(SituacaoFalha).map((v) => ({ label: v, value: v }));
-const OPCOES_STATUS = Object.values(StatusFalha).map((v) => ({ label: v, value: v }));
+const OPCOES_SITUACAO = Object.values(SituacaoAtividade).map((v) => ({ label: v, value: v }));
+const OPCOES_STATUS = Object.values(StatusAtividade).map((v) => ({ label: v, value: v }));
 
 export default function TurnoDetalheScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -31,25 +31,25 @@ export default function TurnoDetalheScreen() {
   const corIconeAcao = Colors.light.tint;
 
   const [turno, setTurno] = useState<Turno | null>(null);
-  const [falhas, setFalhas] = useState<FalhaAtividade[]>([]);
+  const [atividades, setAtividades] = useState<Atividade[]>([]);
   const [qtdResponsaveis, setQtdResponsaveis] = useState(0);
 
   const [novaExpandida, setNovaExpandida] = useState(false);
   const [titulo, setTitulo] = useState('');
   const [local, setLocal] = useState('');
   const [registrou, setRegistrou] = useState('');
-  const [situacao, setSituacao] = useState<SituacaoFalha>(SituacaoFalha.Pendente);
-  const [status, setStatus] = useState<StatusFalha>(StatusFalha.Aberta);
+  const [situacao, setSituacao] = useState<SituacaoAtividade>(SituacaoAtividade.Pendente);
+  const [status, setStatus] = useState<StatusAtividade>(StatusAtividade.Aberta);
 
   const carregar = useCallback(() => {
     void (async () => {
       const [t, lista, responsaveis] = await Promise.all([
         pegarTurnoPorId(turnoId),
-        listarFalhas(turnoId),
+        listarAtividades(turnoId),
         listarResponsaveis(turnoId),
       ]);
       setTurno(t);
-      setFalhas(lista);
+      setAtividades(lista);
       setQtdResponsaveis(responsaveis.length);
     })();
   }, [turnoId]);
@@ -60,11 +60,11 @@ export default function TurnoDetalheScreen() {
     }, [carregar])
   );
 
-  async function adicionarFalha() {
+  async function adicionarAtividade() {
     if (!titulo.trim()) return;
-    await criarFalha({
+    await criarAtividade({
       turnoId,
-      numeroFalha: undefined,
+      numeroAtividade: undefined,
       local: local.trim() || '-',
       situacao,
       status,
@@ -78,21 +78,21 @@ export default function TurnoDetalheScreen() {
     setTitulo('');
     setLocal('');
     setRegistrou('');
-    setSituacao(SituacaoFalha.Pendente);
-    setStatus(StatusFalha.Aberta);
+    setSituacao(SituacaoAtividade.Pendente);
+    setStatus(StatusAtividade.Aberta);
     setNovaExpandida(false);
     carregar();
   }
 
-  async function excluirFalha(idFalha: string) {
-    Alert.alert('Excluir falha', 'Tem certeza que deseja excluir esta falha?', [
+  async function excluirAtividade(idAtividade: string) {
+    Alert.alert('Excluir atividade', 'Tem certeza que deseja excluir esta atividade?', [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Excluir',
         style: 'destructive',
         onPress: () => {
           void (async () => {
-            await removerFalha(idFalha);
+            await removerAtividade(idAtividade);
             carregar();
           })();
         },
@@ -100,8 +100,8 @@ export default function TurnoDetalheScreen() {
     ]);
   }
 
-  async function tirarFotoFalha(falhaId: string) {
-    const resultado = await capturarFotoParaFalha(falhaId);
+  async function tirarFotoAtividade(atividadeId: string) {
+    const resultado = await capturarFotoParaAtividade(atividadeId);
     if (resultado === 'ok') {
       Toast.show({ type: 'success', text1: 'Foto adicionada', position: 'top', visibilityTime: 2000 });
     } else if (resultado === 'sem_permissao') {
@@ -165,32 +165,32 @@ export default function TurnoDetalheScreen() {
 
       <View style={styles.card}>
         <ThemedText type="defaultSemiBold" style={styles.tituloSecao}>
-          Falhas e atividades ({falhas.length})
+          Atividades ({atividades.length})
         </ThemedText>
 
-        {falhas.length === 0 ? (
+        {atividades.length === 0 ? (
           <ThemedText style={styles.vazio}>
-            Nenhuma falha registrada. Use o botão abaixo para adicionar.
+            Nenhuma atividade registrada. Use o botão abaixo para adicionar.
           </ThemedText>
         ) : (
-          falhas.map((f) => (
-            <View key={f.id} style={styles.itemFalha}>
+          atividades.map((f) => (
+            <View key={f.id} style={styles.itemAtividade}>
               <Pressable
-                style={styles.itemFalhaConteudo}
-                onPress={() => router.push(`/turno/${turnoId}/falha/${f.id}` as any)}>
+                style={styles.itemAtividadeConteudo}
+                onPress={() => router.push(`/turno/${turnoId}/atividade/${f.id}` as any)}>
                 <ThemedText type="defaultSemiBold">{f.tituloDefeito}</ThemedText>
                 <ThemedText>{f.local}</ThemedText>
                 <ThemedText style={styles.mini}>
                   {f.situacao} • {f.status}
                 </ThemedText>
               </Pressable>
-              <View style={styles.acoesFalha}>
-                <Pressable style={styles.botaoExcluir} onPress={() => void excluirFalha(f.id)}>
+              <View style={styles.acoesAtividade}>
+                <Pressable style={styles.botaoExcluir} onPress={() => void excluirAtividade(f.id)}>
                   <ThemedText style={styles.excluirTexto}>Excluir</ThemedText>
                 </Pressable>
                 <Pressable
                   style={styles.botaoFoto}
-                  onPress={() => void tirarFotoFalha(f.id)}
+                  onPress={() => void tirarFotoAtividade(f.id)}
                   accessibilityLabel="Tirar foto">
                   <IconSymbol name="camera" size={20} color={corIconeAcao} />
                 </Pressable>
@@ -209,7 +209,7 @@ export default function TurnoDetalheScreen() {
             style={{ transform: [{ rotate: novaExpandida ? '90deg' : '0deg' }] }}
           />
           <View style={styles.cabecalhoTexto}>
-            <ThemedText type="defaultSemiBold">Registrar falha</ThemedText>
+            <ThemedText type="defaultSemiBold">Registrar atividade</ThemedText>
             {!novaExpandida ? (
               <ThemedText style={styles.descricaoRecolhida}>Toque para adicionar uma nova</ThemedText>
             ) : null}
@@ -220,10 +220,10 @@ export default function TurnoDetalheScreen() {
           <View style={styles.conteudoExpansivel}>
             <View style={styles.campo}>
               <CampoTexto
-                label="Título do defeito"
+                label="Título"
                 value={titulo}
                 onChangeText={setTitulo}
-                placeholder="Ex: Falha no equipamento X"
+                placeholder="Ex: Verificação no equipamento X"
               />
             </View>
             <View style={styles.campo}>
@@ -243,7 +243,7 @@ export default function TurnoDetalheScreen() {
             <View style={styles.campo}>
               <SelectOpcao label="Status" value={status} opcoes={OPCOES_STATUS} onChange={setStatus} />
             </View>
-            <Pressable style={styles.botao} onPress={adicionarFalha}>
+            <Pressable style={styles.botao} onPress={adicionarAtividade}>
               <ThemedText type="defaultSemiBold" style={styles.botaoTexto}>
                 Adicionar
               </ThemedText>
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: '#687076',
   },
-  itemFalha: {
+  itemAtividade: {
     flexDirection: 'row',
     gap: 10,
     alignItems: 'flex-start',
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 12,
   },
-  itemFalhaConteudo: {
+  itemAtividadeConteudo: {
     flex: 1,
     gap: 4,
   },
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     opacity: 0.75,
     fontSize: 13,
   },
-  acoesFalha: {
+  acoesAtividade: {
     gap: 8,
     alignItems: 'center',
   },

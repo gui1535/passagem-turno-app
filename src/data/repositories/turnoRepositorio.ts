@@ -70,12 +70,12 @@ export async function criarTurno(
   const db = pegarBanco();
   const agora = agoraIso();
   const turno: Turno = {
+    ...dados,
     id: criarId(),
     status: dados.status ?? StatusTurno.Rascunho,
     tiposManutencao: dados.tiposManutencao ?? [TipoManutencaoTurno.Acompanhamento],
     createdAt: agora,
     updatedAt: agora,
-    ...dados,
   };
 
   await db.runAsync(

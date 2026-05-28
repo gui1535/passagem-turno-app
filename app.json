@@ -46,8 +46,8 @@
       [
         "expo-image-picker",
         {
-          "cameraPermission": "Permitir acesso à câmera para fotografar falhas do turno.",
-          "photosPermission": "Permitir acesso às fotos para anexar imagens às falhas."
+          "cameraPermission": "Permitir acesso à câmera para fotografar atividades do turno.",
+          "photosPermission": "Permitir acesso às fotos para anexar imagens às atividades."
         }
       ],
       [

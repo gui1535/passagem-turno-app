@@ -1,24 +1,24 @@
 import * as ImagePicker from 'expo-image-picker';
 
-import { criarImagemFalha } from '@/src/data/repositories';
+import { criarImagemAtividade } from '@/src/data/repositories';
 import { copiarImagemParaApp } from '@/src/data/storage';
 import { criarId } from '@/src/utils/geral';
 
-export type ResultadoImagemFalha = 'ok' | 'cancelado' | 'sem_permissao';
+export type ResultadoImagemAtividade = 'ok' | 'cancelado' | 'sem_permissao';
 
 export type ResultadoUploadImagens = {
-  status: ResultadoImagemFalha;
+  status: ResultadoImagemAtividade;
   quantidade: number;
 };
 
-async function salvarUriNaFalha(falhaId: string, uriOrigem: string) {
+async function salvarUriNaAtividade(atividadeId: string, uriOrigem: string) {
   const ext = uriOrigem.toLowerCase().includes('.png') ? 'png' : 'jpg';
-  const nome = `${falhaId}-${criarId()}.${ext}`;
+  const nome = `${atividadeId}-${criarId()}.${ext}`;
   const uri = await copiarImagemParaApp(uriOrigem, nome);
-  await criarImagemFalha({ falhaId, uri });
+  await criarImagemAtividade({ atividadeId, uri });
 }
 
-export async function capturarFotoParaFalha(falhaId: string): Promise<ResultadoImagemFalha> {
+export async function capturarFotoParaAtividade(atividadeId: string): Promise<ResultadoImagemAtividade> {
   const perm = await ImagePicker.requestCameraPermissionsAsync();
   if (!perm.granted) return 'sem_permissao';
 
@@ -29,11 +29,11 @@ export async function capturarFotoParaFalha(falhaId: string): Promise<ResultadoI
 
   if (resultado.canceled || !resultado.assets[0]) return 'cancelado';
 
-  await salvarUriNaFalha(falhaId, resultado.assets[0].uri);
+  await salvarUriNaAtividade(atividadeId, resultado.assets[0].uri);
   return 'ok';
 }
 
-export async function enviarImagensParaFalha(falhaId: string): Promise<ResultadoUploadImagens> {
+export async function enviarImagensParaAtividade(atividadeId: string): Promise<ResultadoUploadImagens> {
   const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!perm.granted) return { status: 'sem_permissao', quantidade: 0 };
 
@@ -49,7 +49,7 @@ export async function enviarImagensParaFalha(falhaId: string): Promise<Resultado
   }
 
   for (const asset of resultado.assets) {
-    await salvarUriNaFalha(falhaId, asset.uri);
+    await salvarUriNaAtividade(atividadeId, asset.uri);
   }
 
   return { status: 'ok', quantidade: resultado.assets.length };

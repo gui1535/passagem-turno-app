@@ -29,7 +29,7 @@ export async function garantirModelosTextoIniciais() {
   await inserirModeloTexto({
     tituloModelo: 'Servidor com problema',
     tituloDefeitoPadrao: 'Servidor com problema',
-    descricaoPadrao: 'Servidor apresentou falha ou instabilidade. Verificar logs e serviços.',
+    descricaoPadrao: 'Servidor apresentou instabilidade. Verificar logs e serviços.',
     acoesComunsPadrao: 'Checagem de serviços, reinício controlado e análise de logs.',
   });
 

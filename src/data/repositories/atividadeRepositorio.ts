@@ -1,8 +1,8 @@
-import type { FalhaAtividade } from '@/src/domain/types';
+import type { Atividade } from '@/src/domain/types';
 import { pegarBanco } from '@/src/data/database';
 import { agoraIso, criarId } from '@/src/utils/geral';
 
-type LinhaFalha = {
+type LinhaAtividade = {
   id: string;
   turno_id: string;
   numero_falha: string | null;
@@ -18,14 +18,14 @@ type LinhaFalha = {
   updated_at: string;
 };
 
-function mapearFalha(l: LinhaFalha): FalhaAtividade {
+function mapearAtividade(l: LinhaAtividade): Atividade {
   return {
     id: l.id,
     turnoId: l.turno_id,
-    numeroFalha: l.numero_falha ?? undefined,
+    numeroAtividade: l.numero_falha ?? undefined,
     local: l.local,
-    situacao: l.situacao as FalhaAtividade['situacao'],
-    status: l.status as FalhaAtividade['status'],
+    situacao: l.situacao as Atividade['situacao'],
+    status: l.status as Atividade['status'],
     tituloDefeito: l.titulo_defeito,
     descricaoDefeito: l.descricao_defeito,
     acoesRealizadas: l.acoes_realizadas,
@@ -36,18 +36,18 @@ function mapearFalha(l: LinhaFalha): FalhaAtividade {
   };
 }
 
-export type FiltrosFalha = Partial<{
-  situacao: FalhaAtividade['situacao'];
-  status: FalhaAtividade['status'];
+export type FiltrosAtividade = Partial<{
+  situacao: Atividade['situacao'];
+  status: Atividade['status'];
   local: string;
   nomeRegistrou: string;
 }>;
 
-export async function listarFalhas(turnoId: string, filtros?: FiltrosFalha) {
+export async function listarAtividades(turnoId: string, filtros?: FiltrosAtividade) {
   const db = pegarBanco();
 
   const where: string[] = ['turno_id = ?'];
-  const args: any[] = [turnoId];
+  const args: (string | number | null)[] = [turnoId];
 
   if (filtros?.situacao) {
     where.push('situacao = ?');
@@ -66,28 +66,26 @@ export async function listarFalhas(turnoId: string, filtros?: FiltrosFalha) {
     args.push(filtros.nomeRegistrou);
   }
 
-  const linhas = await db.getAllAsync<LinhaFalha>(
+  const linhas = await db.getAllAsync<LinhaAtividade>(
     `SELECT * FROM falhas_atividades WHERE ${where.join(' AND ')} ORDER BY updated_at DESC;`,
     ...args
   );
-  return linhas.map(mapearFalha);
+  return linhas.map(mapearAtividade);
 }
 
-export async function pegarFalhaPorId(id: string) {
+export async function pegarAtividadePorId(id: string) {
   const db = pegarBanco();
-  const linha = await db.getFirstAsync<LinhaFalha>(
+  const linha = await db.getFirstAsync<LinhaAtividade>(
     `SELECT * FROM falhas_atividades WHERE id = ? LIMIT 1;`,
     id
   );
-  return linha ? mapearFalha(linha) : null;
+  return linha ? mapearAtividade(linha) : null;
 }
 
-export async function criarFalha(
-  dados: Omit<FalhaAtividade, 'id' | 'createdAt' | 'updatedAt'>
-) {
+export async function criarAtividade(dados: Omit<Atividade, 'id' | 'createdAt' | 'updatedAt'>) {
   const db = pegarBanco();
   const agora = agoraIso();
-  const item: FalhaAtividade = {
+  const item: Atividade = {
     ...dados,
     id: criarId(),
     createdAt: agora,
@@ -103,7 +101,7 @@ export async function criarFalha(
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
     item.id,
     item.turnoId,
-    item.numeroFalha ?? null,
+    item.numeroAtividade ?? null,
     item.local,
     item.situacao,
     item.status,
@@ -119,9 +117,9 @@ export async function criarFalha(
   return item;
 }
 
-export async function atualizarFalha(item: FalhaAtividade) {
+export async function atualizarAtividade(item: Atividade) {
   const db = pegarBanco();
-  const atualizado: FalhaAtividade = { ...item, updatedAt: agoraIso() };
+  const atualizado: Atividade = { ...item, updatedAt: agoraIso() };
 
   await db.runAsync(
     `UPDATE falhas_atividades SET
@@ -136,7 +134,7 @@ export async function atualizarFalha(item: FalhaAtividade) {
       nome_editou = ?,
       updated_at = ?
     WHERE id = ?;`,
-    atualizado.numeroFalha ?? null,
+    atualizado.numeroAtividade ?? null,
     atualizado.local,
     atualizado.situacao,
     atualizado.status,
@@ -150,7 +148,7 @@ export async function atualizarFalha(item: FalhaAtividade) {
   );
 }
 
-export async function removerFalha(id: string) {
+export async function removerAtividade(id: string) {
   const db = pegarBanco();
   await db.runAsync(`DELETE FROM falhas_atividades WHERE id = ?;`, id);
 }

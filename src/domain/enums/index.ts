@@ -7,13 +7,13 @@ export enum Empresa {
   Outra = 'Outra',
 }
 
-export enum SituacaoFalha {
+export enum SituacaoAtividade {
   OK = 'OK',
   NOK = 'NOK',
   Pendente = 'Pendente',
 }
 
-export enum StatusFalha {
+export enum StatusAtividade {
   Aberta = 'Aberta',
   EmAtendimento = 'Em atendimento',
   Normalizada = 'Normalizada',
@@ -36,6 +36,6 @@ export enum TipoManutencaoTurno {
 export enum EntidadeHistorico {
   Turno = 'Turno',
   Responsavel = 'Responsavel',
-  FalhaAtividade = 'FalhaAtividade',
-  ImagemFalha = 'ImagemFalha',
+  Atividade = 'Atividade',
+  ImagemAtividade = 'ImagemAtividade',
 }

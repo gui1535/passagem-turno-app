@@ -3,14 +3,14 @@ import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system/legacy';
 import { Asset } from 'expo-asset';
 
-import type { FalhaAtividade, ImagemFalha, Responsavel, Turno } from '@/src/domain/types';
+import type { Atividade, ImagemAtividade, Responsavel, Turno } from '@/src/domain/types';
 import { uriPastaPdfs, garantirPastas } from '@/src/data/storage';
 
 export type DadosRelatorio = {
   turno: Turno;
   responsaveis: Responsavel[];
-  falhas: FalhaAtividade[];
-  imagensPorFalha: Record<string, ImagemFalha[]>;
+  atividades: Atividade[];
+  imagensPorAtividade: Record<string, ImagemAtividade[]>;
 };
 
 function escapeHtml(s: string) {
@@ -22,10 +22,9 @@ function escapeHtml(s: string) {
     .replaceAll("'", '&#039;');
 }
 
-function rotuloFalha(f: FalhaAtividade, indice: number) {
-  const numero = f.numeroFalha?.trim() || String(indice + 1);
-  const local = f.local && f.local !== '-' ? f.local : '—';
-  return `Falha ${numero} – ${local} – ${f.tituloDefeito}`;
+function tituloAtividade(f: Atividade, indice: number) {
+  const titulo = (f.tituloDefeito ?? '').trim();
+  return titulo || `Atividade ${indice + 1}`;
 }
 
 async function uriParaDataUri(uri: string): Promise<string> {
@@ -55,9 +54,9 @@ async function carregarLogoTriviaDataUri(): Promise<string> {
   }
 }
 
-async function carregarSrcImagens(imagensPorFalha: Record<string, ImagemFalha[]>) {
+async function carregarSrcImagens(imagensPorAtividade: Record<string, ImagemAtividade[]>) {
   const mapa: Record<string, string> = {};
-  const todas = Object.values(imagensPorFalha).flat();
+  const todas = Object.values(imagensPorAtividade).flat();
 
   await Promise.all(
     todas.map(async (img) => {
@@ -68,9 +67,9 @@ async function carregarSrcImagens(imagensPorFalha: Record<string, ImagemFalha[]>
   return mapa;
 }
 
-function montarImagensFalha(imagens: ImagemFalha[], srcPorId: Record<string, string>) {
+function montarImagensAtividade(imagens: ImagemAtividade[], srcPorId: Record<string, string>) {
   if (imagens.length === 0) {
-    return '<p class="sem-fotos">Nenhuma foto registrada para esta falha.</p>';
+    return '<p class="sem-fotos">Nenhuma foto registrada para desta atividade.</p>';
   }
 
   return imagens
@@ -78,7 +77,7 @@ function montarImagensFalha(imagens: ImagemFalha[], srcPorId: Record<string, str
       (img, i) => `
         <div class="imagem-bloco">
           <div class="imagem-numero">Foto ${i + 1} de ${imagens.length}</div>
-          <img src="${srcPorId[img.id] ?? img.uri}" alt="Foto da falha" />
+          <img src="${srcPorId[img.id] ?? img.uri}" alt="Foto" />
           <div class="legenda">${escapeHtml(img.legenda?.trim() || 'Sem descrição')}</div>
         </div>
       `
@@ -86,27 +85,27 @@ function montarImagensFalha(imagens: ImagemFalha[], srcPorId: Record<string, str
     .join('');
 }
 
-function montarBlocoFalha(
-  f: FalhaAtividade,
+function montarBlocoAtividade(
+  f: Atividade,
   indice: number,
-  numeroSecao: number,
-  imagens: ImagemFalha[],
+  numeroSecao: string,
+  imagens: ImagemAtividade[],
   srcPorId: Record<string, string>
 ) {
-  const titulo = rotuloFalha(f, indice);
+  const titulo = tituloAtividade(f, indice);
 
   return `
-    <section class="falha-secao" id="falha-${escapeHtml(f.id)}">
-      <h2>${numeroSecao}. ${escapeHtml(titulo)}</h2>
+    <section class="atividade-secao" id="atividade-${escapeHtml(f.id)}">
+      <h3 class="atividade-titulo">${numeroSecao} ${escapeHtml(titulo)}</h3>
 
-      <div class="falha-descricao">
+      <div class="atividade-descricao">
         <p><b>Situação:</b> <span class="${f.situacao === 'OK' ? 'ok' : 'nok'}">${escapeHtml(f.situacao)}</span></p>
         <p><b>Status:</b> ${escapeHtml(f.status)}</p>
         <p><b>Registrado por:</b> ${escapeHtml(f.nomeRegistrou)}</p>
 
         ${
           f.descricaoDefeito?.trim()
-            ? `<p><b>Descrição do defeito:</b><br/>${escapeHtml(f.descricaoDefeito).replaceAll('\n', '<br/>')}</p>`
+            ? `<p><b>Descrição:</b><br/>${escapeHtml(f.descricaoDefeito).replaceAll('\n', '<br/>')}</p>`
             : ''
         }
 
@@ -117,17 +116,17 @@ function montarBlocoFalha(
         }
       </div>
 
-      <h3 class="falha-fotos-titulo">Fotos desta falha (${imagens.length})</h3>
-      <div class="falha-fotos">
-        ${montarImagensFalha(imagens, srcPorId)}
+      <h3 class="atividade-fotos-titulo">Fotos (${imagens.length})</h3>
+      <div class="atividade-fotos">
+        ${montarImagensAtividade(imagens, srcPorId)}
       </div>
     </section>
   `;
 }
 
 export async function montarHtmlRelatorio(dados: DadosRelatorio) {
-  const { turno, responsaveis, falhas, imagensPorFalha } = dados;
-  const srcPorId = await carregarSrcImagens(imagensPorFalha);
+  const { turno, responsaveis, atividades, imagensPorAtividade } = dados;
+  const srcPorId = await carregarSrcImagens(imagensPorAtividade);
   const logoTriviaSrc = await carregarLogoTriviaDataUri();
 
   const responsaveisHtml = responsaveis
@@ -141,13 +140,11 @@ export async function montarHtmlRelatorio(dados: DadosRelatorio) {
     )
     .join('');
 
-  const falhasTabelaHtml = falhas
+  const atividadesTabelaHtml = atividades
     .map((f, i) => {
-      const imagens = imagensPorFalha[f.id] ?? [];
+      const imagens = imagensPorAtividade[f.id] ?? [];
       return `
         <tr>
-          <td>${i + 2}</td>
-          <td>${escapeHtml(f.numeroFalha || '—')}</td>
           <td>${escapeHtml(f.local !== '-' ? f.local : '—')}</td>
           <td class="${f.situacao === 'OK' ? 'ok' : 'nok'}">${escapeHtml(f.situacao)}</td>
           <td>${escapeHtml(f.tituloDefeito)}</td>
@@ -158,21 +155,90 @@ export async function montarHtmlRelatorio(dados: DadosRelatorio) {
     .join('');
 
   const itensSumarioHtml = [
-    '<p>1. Descrição da atividade</p>',
-    ...falhas.map((f, i) => `<p>${i + 2}. ${escapeHtml(rotuloFalha(f, i))}</p>`),
-  ].join('');
-
-  const falhasDetalheHtml = falhas
-    .map((f, i) => montarBlocoFalha(f, i, i + 2, imagensPorFalha[f.id] ?? [], srcPorId))
+    '<p>1. Resumo</p>',
+  ]
+    .concat(
+      atividades.length > 0
+        ? [
+            '<p>2. Atividades</p>',
+            ...atividades.map(
+              (f, i) =>
+                `<p class="sumario-sub">2.${i + 1}. ${escapeHtml(tituloAtividade(f, i))}</p>`
+            ),
+          ]
+        : []
+    )
     .join('');
 
-  const totalFotos = Object.values(imagensPorFalha).reduce((s, lista) => s + lista.length, 0);
+  const atividadesDetalheHtml = atividades
+    .map((f, i) =>
+      montarBlocoAtividade(f, i, `2.${i + 1}.`, imagensPorAtividade[f.id] ?? [], srcPorId)
+    )
+    .join('');
+
+  const totalFotos = Object.values(imagensPorAtividade).reduce((s, lista) => s + lista.length, 0);
 
   const tipos = (turno.tiposManutencao ?? []).filter(Boolean);
   const tem = (v: string) => tipos.includes(v as any);
   const marcado = (v: string) => (tem(v) ? 'x' : ' ');
-  const tituloTipo =
-    tipos.length > 0 ? `Tipos: ${tipos.join(', ')}` : 'Tipos: Acompanhamento';
+
+  const temHorario = !!(turno.horaInicio || turno.horaFim);
+  const descricaoDia = (turno.descricaoAtividadeDoDia ?? '').trim();
+
+  const responsaveisBlocoHtml =
+    responsaveis.length > 0
+      ? `
+  <div class="responsaveis-title">RESPONSÁVEIS</div>
+
+  <table>
+    <tr>
+      <th>Nome</th>
+      <th>Empresa</th>
+    </tr>
+    ${responsaveisHtml}
+  </table>
+`
+      : '';
+
+  const sumarioBlocoHtml = `
+  <div class="sumario">SUMÁRIO</div>
+  ${
+    atividades.length > 0
+      ? `<p class="sumario-meta">${atividades.length} atividade(s)${totalFotos > 0 ? ` · ${totalFotos} foto(s)` : ''}</p>`
+      : ''
+  }
+  <div class="sumario-lista">
+    ${itensSumarioHtml}
+  </div>
+`;
+
+  const resumoBlocoHtml = `
+  <h2 id="secao-resumo">1. Resumo</h2>
+
+  ${
+    atividades.length > 0
+      ? `
+  <table class="atividades">
+    <tr>
+      <th>Local</th>
+      <th>Situação</th>
+      <th>Título</th>
+      <th>Fotos</th>
+    </tr>
+    ${atividadesTabelaHtml}
+  </table>
+  `
+      : '<p class="sem-fotos">Nenhuma atividade registrada.</p>'
+  }
+`;
+
+  const atividadesSecaoHtml =
+    atividades.length > 0
+      ? `
+  <h2 id="secao-atividades">2. Atividades</h2>
+  ${atividadesDetalheHtml}
+`
+      : '';
 
   return `
 <!doctype html>
@@ -225,7 +291,15 @@ export async function montarHtmlRelatorio(dados: DadosRelatorio) {
     page-break-after: avoid;
   }
 
-  h3.falha-fotos-titulo {
+  h3.atividade-titulo {
+    font-size: 14px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #1E1D69;
+    page-break-after: avoid;
+  }
+
+  h3.atividade-fotos-titulo {
     font-size: 13px;
     margin: 14px 0 8px;
     padding-top: 8px;
@@ -286,6 +360,12 @@ export async function montarHtmlRelatorio(dados: DadosRelatorio) {
     font-weight: bold;
   }
 
+  .sumario-lista p.sumario-sub {
+    margin-left: 20px;
+    font-weight: normal;
+    font-size: 12px;
+  }
+
   .sumario-meta {
     text-align: center;
     font-size: 11px;
@@ -299,16 +379,16 @@ export async function montarHtmlRelatorio(dados: DadosRelatorio) {
     font-weight: bold;
   }
 
-  .falhas th {
+  .atividades th {
     background: #d9e6f5;
   }
 
-  .falhas td {
+  .atividades td {
     text-align: center;
     font-weight: bold;
   }
 
-  .falhas td:nth-child(5) {
+  .atividades td:nth-child(3) {
     font-weight: normal;
   }
 
@@ -322,21 +402,21 @@ export async function montarHtmlRelatorio(dados: DadosRelatorio) {
     font-weight: bold;
   }
 
-  .falha-secao {
+  .atividade-secao {
     margin-top: 24px;
     page-break-inside: avoid;
   }
 
-  .falha-descricao {
+  .atividade-descricao {
     margin: 8px 0 4px;
     line-height: 1.45;
   }
 
-  .falha-descricao p {
+  .atividade-descricao p {
     margin: 6px 0;
   }
 
-  .falha-fotos {
+  .atividade-fotos {
     margin-top: 4px;
   }
 
@@ -387,18 +467,23 @@ export async function montarHtmlRelatorio(dados: DadosRelatorio) {
   <table>
     <tr>
       <td class="bold">Data:</td>
-      <td>${escapeHtml(turno.data)}</td>
+      <td colspan="${temHorario ? 1 : 3}">${escapeHtml(turno.data)}</td>
+      ${
+        temHorario
+          ? `
       <td class="bold">Horário:</td>
-      <td>${escapeHtml(turno.horaInicio ?? '—')} às ${escapeHtml(turno.horaFim ?? '—')}</td>
+      <td>${escapeHtml(turno.horaInicio ?? '—')} – ${escapeHtml(turno.horaFim ?? '—')}</td>
+      `
+          : ''
+      }
     </tr>
     <tr>
       <td colspan="4"><b>Localização:</b> ${escapeHtml(turno.localizacao)}</td>
     </tr>
     <tr>
-      <td colspan="4"><b>Descrição da atividade:</b> ${escapeHtml(turno.descricaoAtividadeDoDia || '—')}</td>
+    <td colspan="4"><b>Descrição do Turno:</b> ${escapeHtml(turno.descricaoAtividadeDoDia)}</td>
     </tr>
   </table>
-
   <br />
 
   <table class="tipo">
@@ -410,50 +495,13 @@ export async function montarHtmlRelatorio(dados: DadosRelatorio) {
     </tr>
   </table>
 
-  <div class="responsaveis-title">RESPONSÁVEIS</div>
+  ${responsaveisBlocoHtml}
 
-  <table>
-    <tr>
-      <th>Nome</th>
-      <th>Empresa</th>
-    </tr>
-    ${responsaveisHtml || '<tr><td colspan="2" class="center">Nenhum responsável cadastrado</td></tr>'}
-  </table>
+  ${sumarioBlocoHtml}
 
-  <div class="sumario">SUMÁRIO</div>
-  <p class="sumario-meta">${falhas.length} falha(s) · ${totalFotos} foto(s) no total</p>
-  <div class="sumario-lista">
-    ${itensSumarioHtml}
-  </div>
+  ${resumoBlocoHtml}
 
-  <h2 id="secao-descricao">1. Descrição da atividade</h2>
-
-  <p><b>${escapeHtml(tituloTipo)}</b></p>
-
-  <table class="quadro-info">
-    <tr>
-      <td>
-        Data ${escapeHtml(turno.data)}<br/>
-        Equipe: CCO / CPTM
-      </td>
-    </tr>
-  </table>
-
-  <p><b>Resumo das falhas</b> (detalhamento e fotos em cada seção abaixo)</p>
-
-  <table class="falhas">
-    <tr>
-      <th>Seção</th>
-      <th>Falha</th>
-      <th>Local</th>
-      <th>Situação</th>
-      <th>Descrição do defeito</th>
-      <th>Fotos</th>
-    </tr>
-    ${falhasTabelaHtml || '<tr><td colspan="6" class="center">Nenhuma falha registrada</td></tr>'}
-  </table>
-
-  ${falhasDetalheHtml || '<p class="center">Nenhuma falha registrada para detalhar.</p>'}
+  ${atividadesSecaoHtml}
 </body>
 </html>
 `;

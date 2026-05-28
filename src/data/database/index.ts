@@ -2,7 +2,7 @@ import * as SQLite from 'expo-sqlite';
 
 // Banco local (SQLite)
 export const NOME_BANCO = 'passagem_turno.db';
-export const VERSAO_BANCO = 6;
+export const VERSAO_BANCO = 7;
 
 let banco: SQLite.SQLiteDatabase | null = null;
 
@@ -42,6 +42,9 @@ export async function iniciarBanco() {
   }
   if (versaoAtual < 6) {
     await aplicarMigracaoV6(db);
+  }
+  if (versaoAtual < 7) {
+    await aplicarMigracaoV7(db);
   }
   await salvarVersao(db, VERSAO_BANCO);
 }
@@ -280,5 +283,12 @@ async function aplicarMigracaoV5(db: SQLite.SQLiteDatabase) {
 async function aplicarMigracaoV6(db: SQLite.SQLiteDatabase) {
   await db.execAsync(`
     ALTER TABLE turnos ADD COLUMN tipo_manutencao TEXT NOT NULL DEFAULT 'Acompanhamento';
+  `);
+}
+
+async function aplicarMigracaoV7(db: SQLite.SQLiteDatabase) {
+  await db.execAsync(`
+    UPDATE historico_edicao SET entidade = 'Atividade' WHERE entidade = 'FalhaAtividade';
+    UPDATE historico_edicao SET entidade = 'ImagemAtividade' WHERE entidade = 'ImagemFalha';
   `);
 }

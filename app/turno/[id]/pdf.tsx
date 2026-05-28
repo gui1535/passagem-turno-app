@@ -8,12 +8,12 @@ import { TopoVoltar } from '@/components/topo-voltar';
 import { VisualizadorRelatorio } from '@/components/visualizador-relatorio';
 import { corBotao } from '@/constants/theme';
 import {
-  listarFalhas,
-  listarImagensDaFalha,
+  listarAtividades,
+  listarImagensDaAtividade,
   listarResponsaveis,
   pegarTurnoPorId,
 } from '@/src/data/repositories';
-import type { FalhaAtividade, ImagemFalha, Responsavel, Turno } from '@/src/domain/types';
+import type { Atividade, ImagemAtividade, Responsavel, Turno } from '@/src/domain/types';
 
 export default function PdfScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -22,8 +22,8 @@ export default function PdfScreen() {
   const [carregando, setCarregando] = useState(true);
   const [turno, setTurno] = useState<Turno | null>(null);
   const [responsaveis, setResponsaveis] = useState<Responsavel[]>([]);
-  const [falhas, setFalhas] = useState<FalhaAtividade[]>([]);
-  const [imagensPorFalha, setImagensPorFalha] = useState<Record<string, ImagemFalha[]>>({});
+  const [atividades, setAtividades] = useState<Atividade[]>([]);
+  const [imagensPorAtividade, setImagensPorAtividade] = useState<Record<string, ImagemAtividade[]>>({});
 
   const carregar = useCallback(() => {
     void (async () => {
@@ -32,18 +32,18 @@ export default function PdfScreen() {
         const [t, r, f] = await Promise.all([
           pegarTurnoPorId(turnoId),
           listarResponsaveis(turnoId),
-          listarFalhas(turnoId),
+          listarAtividades(turnoId),
         ]);
 
-        const imagens: Record<string, ImagemFalha[]> = {};
+        const imagens: Record<string, ImagemAtividade[]> = {};
         for (const item of f) {
-          imagens[item.id] = await listarImagensDaFalha(item.id);
+          imagens[item.id] = await listarImagensDaAtividade(item.id);
         }
 
         setTurno(t);
         setResponsaveis(r);
-        setFalhas(f);
-        setImagensPorFalha(imagens);
+        setAtividades(f);
+        setImagensPorAtividade(imagens);
       } finally {
         setCarregando(false);
       }
@@ -56,7 +56,7 @@ export default function PdfScreen() {
     }, [carregar])
   );
 
-  const dadosRelatorio = turno && !carregando ? { turno, responsaveis, falhas, imagensPorFalha } : null;
+  const dadosRelatorio = turno && !carregando ? { turno, responsaveis, atividades, imagensPorAtividade } : null;
 
   return (
     <Tela style={styles.container}>
