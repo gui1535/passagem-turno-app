@@ -1,5 +1,5 @@
 import type { Turno } from '@/src/domain/types';
-import { StatusTurno, TipoManutencaoTurno } from '@/src/domain/enums';
+import { TipoManutencaoTurno } from '@/src/domain/enums';
 import { pegarBanco } from '@/src/data/database';
 import { agoraIso, criarId } from '@/src/utils/geral';
 
@@ -11,7 +11,6 @@ type LinhaTurno = {
   localizacao: string;
   descricao_atividade_dia: string;
   tipo_manutencao: string;
-  status: string;
   created_at: string;
   updated_at: string;
 };
@@ -41,7 +40,6 @@ function mapearTurno(l: LinhaTurno): Turno {
     localizacao: l.localizacao,
     descricaoAtividadeDoDia: l.descricao_atividade_dia,
     tiposManutencao: parseTiposManutencao(l.tipo_manutencao),
-    status: l.status as Turno['status'],
     createdAt: l.created_at,
     updatedAt: l.updated_at,
   };
@@ -65,14 +63,13 @@ export async function pegarTurnoPorId(id: string): Promise<Turno | null> {
 }
 
 export async function criarTurno(
-  dados: Omit<Turno, 'id' | 'createdAt' | 'updatedAt' | 'status'> & { status?: StatusTurno }
+  dados: Omit<Turno, 'id' | 'createdAt' | 'updatedAt'>
 ): Promise<Turno> {
   const db = pegarBanco();
   const agora = agoraIso();
   const turno: Turno = {
     ...dados,
     id: criarId(),
-    status: dados.status ?? StatusTurno.Rascunho,
     tiposManutencao: dados.tiposManutencao ?? [TipoManutencaoTurno.Acompanhamento],
     createdAt: agora,
     updatedAt: agora,
@@ -80,8 +77,8 @@ export async function criarTurno(
 
   await db.runAsync(
     `INSERT INTO turnos (
-      id, data, hora_inicio, hora_fim, localizacao, descricao_atividade_dia, tipo_manutencao, status, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+      id, data, hora_inicio, hora_fim, localizacao, descricao_atividade_dia, tipo_manutencao, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
     turno.id,
     turno.data,
     turno.horaInicio ?? null,
@@ -89,7 +86,6 @@ export async function criarTurno(
     turno.localizacao,
     turno.descricaoAtividadeDoDia,
     formatTiposManutencao(turno.tiposManutencao),
-    turno.status,
     turno.createdAt,
     turno.updatedAt
   );
@@ -109,7 +105,6 @@ export async function atualizarTurno(turno: Turno): Promise<void> {
       localizacao = ?,
       descricao_atividade_dia = ?,
       tipo_manutencao = ?,
-      status = ?,
       updated_at = ?
     WHERE id = ?;`,
     atualizado.data,
@@ -118,7 +113,6 @@ export async function atualizarTurno(turno: Turno): Promise<void> {
     atualizado.localizacao,
     atualizado.descricaoAtividadeDoDia,
     formatTiposManutencao(atualizado.tiposManutencao),
-    atualizado.status,
     atualizado.updatedAt,
     atualizado.id
   );
@@ -128,4 +122,3 @@ export async function removerTurno(id: string): Promise<void> {
   const db = pegarBanco();
   await db.runAsync(`DELETE FROM turnos WHERE id = ?;`, id);
 }
-

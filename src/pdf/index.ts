@@ -100,7 +100,6 @@ function montarBlocoAtividade(
 
       <div class="atividade-descricao">
         <p><b>Situação:</b> <span class="${f.situacao === 'OK' ? 'ok' : 'nok'}">${escapeHtml(f.situacao)}</span></p>
-        <p><b>Status:</b> ${escapeHtml(f.status)}</p>
         <p><b>Registrado por:</b> ${escapeHtml(f.nomeRegistrou)}</p>
 
         ${
@@ -462,7 +461,7 @@ export async function montarHtmlRelatorio(dados: DadosRelatorio) {
     ${logoTriviaSrc ? `<img src="${logoTriviaSrc}" alt="TRIVIA" />` : 'TRIVIA'}
   </div>
 
-  <h1>RELATÓRIO DE ACOMPANHAMENTO CCO</h1>
+  <h1>RELATÓRIO PASSAGEM DE TURNO</h1>
 
   <table>
     <tr>

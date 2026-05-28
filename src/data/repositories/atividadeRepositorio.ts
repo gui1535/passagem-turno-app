@@ -8,7 +8,6 @@ type LinhaAtividade = {
   numero_falha: string | null;
   local: string;
   situacao: string;
-  status: string;
   titulo_defeito: string;
   descricao_defeito: string;
   acoes_realizadas: string;
@@ -25,7 +24,6 @@ function mapearAtividade(l: LinhaAtividade): Atividade {
     numeroAtividade: l.numero_falha ?? undefined,
     local: l.local,
     situacao: l.situacao as Atividade['situacao'],
-    status: l.status as Atividade['status'],
     tituloDefeito: l.titulo_defeito,
     descricaoDefeito: l.descricao_defeito,
     acoesRealizadas: l.acoes_realizadas,
@@ -38,7 +36,6 @@ function mapearAtividade(l: LinhaAtividade): Atividade {
 
 export type FiltrosAtividade = Partial<{
   situacao: Atividade['situacao'];
-  status: Atividade['status'];
   local: string;
   nomeRegistrou: string;
 }>;
@@ -52,10 +49,6 @@ export async function listarAtividades(turnoId: string, filtros?: FiltrosAtivida
   if (filtros?.situacao) {
     where.push('situacao = ?');
     args.push(filtros.situacao);
-  }
-  if (filtros?.status) {
-    where.push('status = ?');
-    args.push(filtros.status);
   }
   if (filtros?.local) {
     where.push('local = ?');
@@ -94,17 +87,16 @@ export async function criarAtividade(dados: Omit<Atividade, 'id' | 'createdAt' |
 
   await db.runAsync(
     `INSERT INTO falhas_atividades (
-      id, turno_id, numero_falha, local, situacao, status,
+      id, turno_id, numero_falha, local, situacao,
       titulo_defeito, descricao_defeito, acoes_realizadas,
       nome_registrou, nome_editou,
       created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
     item.id,
     item.turnoId,
     item.numeroAtividade ?? null,
     item.local,
     item.situacao,
-    item.status,
     item.tituloDefeito,
     item.descricaoDefeito,
     item.acoesRealizadas,
@@ -126,7 +118,6 @@ export async function atualizarAtividade(item: Atividade) {
       numero_falha = ?,
       local = ?,
       situacao = ?,
-      status = ?,
       titulo_defeito = ?,
       descricao_defeito = ?,
       acoes_realizadas = ?,
@@ -137,7 +128,6 @@ export async function atualizarAtividade(item: Atividade) {
     atualizado.numeroAtividade ?? null,
     atualizado.local,
     atualizado.situacao,
-    atualizado.status,
     atualizado.tituloDefeito,
     atualizado.descricaoDefeito,
     atualizado.acoesRealizadas,

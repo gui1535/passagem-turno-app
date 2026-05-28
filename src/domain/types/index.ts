@@ -2,8 +2,6 @@ import type {
   Empresa,
   EntidadeHistorico,
   SituacaoAtividade,
-  StatusAtividade,
-  StatusTurno,
   TipoManutencaoTurno,
 } from '@/src/domain/enums';
 
@@ -15,7 +13,6 @@ export type Turno = {
   localizacao: string;
   descricaoAtividadeDoDia: string;
   tiposManutencao: TipoManutencaoTurno[];
-  status: StatusTurno;
   createdAt: string;
   updatedAt: string;
 };
@@ -34,7 +31,6 @@ export type Atividade = {
   numeroAtividade?: string;
   local: string;
   situacao: SituacaoAtividade;
-  status: StatusAtividade;
   tituloDefeito: string;
   descricaoDefeito: string;
   acoesRealizadas: string;

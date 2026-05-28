@@ -17,12 +17,11 @@ import {
   pegarTurnoPorId,
   removerAtividade,
 } from '@/src/data/repositories';
-import { SituacaoAtividade, StatusAtividade } from '@/src/domain/enums';
+import { SituacaoAtividade } from '@/src/domain/enums';
 import type { Atividade, Turno } from '@/src/domain/types';
 import { capturarFotoParaAtividade } from '@/src/features/imagens/adicionarImagemAtividade';
 
 const OPCOES_SITUACAO = Object.values(SituacaoAtividade).map((v) => ({ label: v, value: v }));
-const OPCOES_STATUS = Object.values(StatusAtividade).map((v) => ({ label: v, value: v }));
 
 export default function TurnoDetalheScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -39,7 +38,6 @@ export default function TurnoDetalheScreen() {
   const [local, setLocal] = useState('');
   const [registrou, setRegistrou] = useState('');
   const [situacao, setSituacao] = useState<SituacaoAtividade>(SituacaoAtividade.Pendente);
-  const [status, setStatus] = useState<StatusAtividade>(StatusAtividade.Aberta);
 
   const carregar = useCallback(() => {
     void (async () => {
@@ -67,7 +65,6 @@ export default function TurnoDetalheScreen() {
       numeroAtividade: undefined,
       local: local.trim() || '-',
       situacao,
-      status,
       tituloDefeito: titulo.trim(),
       descricaoDefeito: '',
       acoesRealizadas: '',
@@ -79,7 +76,6 @@ export default function TurnoDetalheScreen() {
     setLocal('');
     setRegistrou('');
     setSituacao(SituacaoAtividade.Pendente);
-    setStatus(StatusAtividade.Aberta);
     setNovaExpandida(false);
     carregar();
   }
@@ -146,10 +142,6 @@ export default function TurnoDetalheScreen() {
               {turno.horaInicio ?? '—'} – {turno.horaFim ?? '—'}
             </ThemedText>
           ) : null}
-          <ThemedText>
-            <ThemedText type="defaultSemiBold">Status:</ThemedText> {turno.status}
-          </ThemedText>
-
           <Pressable
             style={styles.linkResponsaveis}
             onPress={() => router.push(`/turno/${turnoId}/responsaveis` as any)}>
@@ -180,9 +172,7 @@ export default function TurnoDetalheScreen() {
                 onPress={() => router.push(`/turno/${turnoId}/atividade/${f.id}` as any)}>
                 <ThemedText type="defaultSemiBold">{f.tituloDefeito}</ThemedText>
                 <ThemedText>{f.local}</ThemedText>
-                <ThemedText style={styles.mini}>
-                  {f.situacao} • {f.status}
-                </ThemedText>
+                <ThemedText style={styles.mini}>{f.situacao}</ThemedText>
               </Pressable>
               <View style={styles.acoesAtividade}>
                 <Pressable style={styles.botaoExcluir} onPress={() => void excluirAtividade(f.id)}>
@@ -239,9 +229,6 @@ export default function TurnoDetalheScreen() {
             </View>
             <View style={styles.campo}>
               <SelectOpcao label="Situação" value={situacao} opcoes={OPCOES_SITUACAO} onChange={setSituacao} />
-            </View>
-            <View style={styles.campo}>
-              <SelectOpcao label="Status" value={status} opcoes={OPCOES_STATUS} onChange={setStatus} />
             </View>
             <Pressable style={styles.botao} onPress={adicionarAtividade}>
               <ThemedText type="defaultSemiBold" style={styles.botaoTexto}>

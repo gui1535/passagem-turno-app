@@ -13,19 +13,6 @@ export enum SituacaoAtividade {
   Pendente = 'Pendente',
 }
 
-export enum StatusAtividade {
-  Aberta = 'Aberta',
-  EmAtendimento = 'Em atendimento',
-  Normalizada = 'Normalizada',
-  Pendente = 'Pendente',
-}
-
-export enum StatusTurno {
-  Rascunho = 'Rascunho',
-  EmAndamento = 'Em andamento',
-  Finalizado = 'Finalizado',
-}
-
 export enum TipoManutencaoTurno {
   Corretiva = 'Corretiva',
   Preventiva = 'Preventiva',

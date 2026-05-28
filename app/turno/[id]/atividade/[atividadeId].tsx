@@ -14,11 +14,10 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { corBotao } from '@/constants/theme';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { atualizarAtividade, pegarAtividadePorId } from '@/src/data/repositories';
-import { SituacaoAtividade, StatusAtividade } from '@/src/domain/enums';
+import { SituacaoAtividade } from '@/src/domain/enums';
 import type { Atividade } from '@/src/domain/types';
 
 const OPCOES_SITUACAO = Object.values(SituacaoAtividade).map((v) => ({ label: v, value: v }));
-const OPCOES_STATUS = Object.values(StatusAtividade).map((v) => ({ label: v, value: v }));
 
 export default function AtividadeDetalheScreen() {
   const { atividadeId } = useLocalSearchParams<{ atividadeId: string }>();
@@ -30,7 +29,6 @@ export default function AtividadeDetalheScreen() {
   const [local, setLocal] = useState('');
   const [registrou, setRegistrou] = useState('');
   const [situacao, setSituacao] = useState<SituacaoAtividade>(SituacaoAtividade.Pendente);
-  const [status, setStatus] = useState<StatusAtividade>(StatusAtividade.Aberta);
   const [descricao, setDescricao] = useState('');
   const [acoes, setAcoes] = useState('');
   const [fotosKey, setFotosKey] = useState(0);
@@ -45,7 +43,6 @@ export default function AtividadeDetalheScreen() {
       setLocal(a.local === '-' ? '' : a.local);
       setRegistrou(a.nomeRegistrou === 'Não informado' ? '' : a.nomeRegistrou);
       setSituacao(a.situacao);
-      setStatus(a.status);
       setDescricao(a.descricaoDefeito ?? '');
       setAcoes(a.acoesRealizadas ?? '');
     })();
@@ -65,7 +62,6 @@ export default function AtividadeDetalheScreen() {
       local: local.trim() || '-',
       nomeRegistrou: registrou.trim() || 'Não informado',
       situacao,
-      status,
       descricaoDefeito: descricao,
       acoesRealizadas: acoes,
     });
@@ -134,21 +130,14 @@ export default function AtividadeDetalheScreen() {
             />
           </SecaoDropdown>
 
-          <SecaoDropdown titulo="Classificação" descricao="Situação atual e andamento.">
-            <View style={styles.linha}>
-              <View style={styles.coluna}>
-                <SelectOpcao
-                  label="Situação"
-                  value={situacao}
-                  opcoes={OPCOES_SITUACAO}
-                  onChange={setSituacao}
-                  obrigatorio
-                />
-              </View>
-              <View style={styles.coluna}>
-                <SelectOpcao label="Status" value={status} opcoes={OPCOES_STATUS} onChange={setStatus} obrigatorio />
-              </View>
-            </View>
+          <SecaoDropdown titulo="Classificação" descricao="Situação atual da atividade.">
+            <SelectOpcao
+              label="Situação"
+              value={situacao}
+              opcoes={OPCOES_SITUACAO}
+              onChange={setSituacao}
+              obrigatorio
+            />
           </SecaoDropdown>
 
           <SecaoDropdown titulo="Detalhamento" descricao="Descreva a atividade e o que foi feito.">

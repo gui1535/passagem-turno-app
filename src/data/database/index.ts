@@ -2,7 +2,7 @@ import * as SQLite from 'expo-sqlite';
 
 // Banco local (SQLite)
 export const NOME_BANCO = 'passagem_turno.db';
-export const VERSAO_BANCO = 7;
+export const VERSAO_BANCO = 10;
 
 let banco: SQLite.SQLiteDatabase | null = null;
 
@@ -45,6 +45,15 @@ export async function iniciarBanco() {
   }
   if (versaoAtual < 7) {
     await aplicarMigracaoV7(db);
+  }
+  if (versaoAtual < 8) {
+    await aplicarMigracaoV8(db);
+  }
+  if (versaoAtual < 9) {
+    await aplicarMigracaoV9(db);
+  }
+  if (versaoAtual < 10) {
+    await aplicarMigracaoV10(db);
   }
   await salvarVersao(db, VERSAO_BANCO);
 }
@@ -290,5 +299,94 @@ async function aplicarMigracaoV7(db: SQLite.SQLiteDatabase) {
   await db.execAsync(`
     UPDATE historico_edicao SET entidade = 'Atividade' WHERE entidade = 'FalhaAtividade';
     UPDATE historico_edicao SET entidade = 'ImagemAtividade' WHERE entidade = 'ImagemFalha';
+  `);
+}
+
+async function aplicarMigracaoV8(db: SQLite.SQLiteDatabase) {
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS falhas_atividades_nova (
+      id TEXT PRIMARY KEY NOT NULL,
+      turno_id TEXT NOT NULL,
+      numero_falha TEXT,
+      local TEXT NOT NULL,
+      situacao TEXT NOT NULL,
+      titulo_defeito TEXT NOT NULL,
+      descricao_defeito TEXT NOT NULL,
+      acoes_realizadas TEXT NOT NULL,
+      nome_registrou TEXT NOT NULL,
+      nome_editou TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (turno_id) REFERENCES turnos(id) ON DELETE CASCADE
+    );
+
+    INSERT INTO falhas_atividades_nova (
+      id, turno_id, numero_falha, local, situacao,
+      titulo_defeito, descricao_defeito, acoes_realizadas,
+      nome_registrou, nome_editou,
+      created_at, updated_at
+    )
+    SELECT
+      id, turno_id, numero_falha, local, situacao,
+      titulo_defeito, descricao_defeito, acoes_realizadas,
+      nome_registrou, nome_editou,
+      created_at, updated_at
+    FROM falhas_atividades;
+
+    DROP TABLE falhas_atividades;
+    ALTER TABLE falhas_atividades_nova RENAME TO falhas_atividades;
+
+    CREATE INDEX IF NOT EXISTS idx_falhas_turno ON falhas_atividades(turno_id);
+    CREATE INDEX IF NOT EXISTS idx_falhas_situacao ON falhas_atividades(situacao);
+    CREATE INDEX IF NOT EXISTS idx_falhas_local ON falhas_atividades(local);
+    CREATE INDEX IF NOT EXISTS idx_falhas_registrou ON falhas_atividades(nome_registrou);
+  `);
+}
+
+async function aplicarMigracaoV9(db: SQLite.SQLiteDatabase) {
+  await removerColunaStatusTurnos(db);
+}
+
+async function aplicarMigracaoV10(db: SQLite.SQLiteDatabase) {
+  await removerColunaStatusTurnos(db);
+}
+
+async function removerColunaStatusTurnos(db: SQLite.SQLiteDatabase) {
+  const colunas = await db.getAllAsync<{ name: string }>(`PRAGMA table_info(turnos);`);
+  if (!colunas.some((c) => c.name === 'status')) {
+    await db.execAsync(`DROP TABLE IF EXISTS turnos_nova;`);
+    return;
+  }
+
+  await db.execAsync(`
+    PRAGMA foreign_keys = OFF;
+
+    DROP TABLE IF EXISTS turnos_nova;
+
+    CREATE TABLE turnos_nova (
+      id TEXT PRIMARY KEY NOT NULL,
+      data TEXT NOT NULL,
+      hora_inicio TEXT,
+      hora_fim TEXT,
+      localizacao TEXT NOT NULL,
+      descricao_atividade_dia TEXT NOT NULL,
+      tipo_manutencao TEXT NOT NULL DEFAULT 'Acompanhamento',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    INSERT INTO turnos_nova (
+      id, data, hora_inicio, hora_fim, localizacao, descricao_atividade_dia, tipo_manutencao, created_at, updated_at
+    )
+    SELECT
+      id, data, hora_inicio, hora_fim, localizacao, descricao_atividade_dia,
+      COALESCE(tipo_manutencao, 'Acompanhamento'),
+      created_at, updated_at
+    FROM turnos;
+
+    DROP TABLE turnos;
+    ALTER TABLE turnos_nova RENAME TO turnos;
+
+    PRAGMA foreign_keys = ON;
   `);
 }
