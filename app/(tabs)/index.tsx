@@ -2,10 +2,12 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { CabecalhoLogo } from '@/components/cabecalho-logo';
 import { Tela } from '@/components/tela';
 import { ThemedText } from '@/components/themed-text';
-import type { Turno } from '@/src/domain/types';
+import { corBotao } from '@/constants/theme';
 import { listarTurnos } from '@/src/data/repositories';
+import type { Turno } from '@/src/domain/types';
 
 export default function TurnosScreen() {
   const [turnos, setTurnos] = useState<Turno[]>([]);
@@ -21,17 +23,20 @@ export default function TurnosScreen() {
 
   return (
     <Tela style={styles.container}>
-      <View style={styles.topo}>
-        <ThemedText type="title">Turnos</ThemedText>
-        <Pressable style={styles.botaoNovo} onPress={() => router.push('/turno/novo')}>
-          <ThemedText type="defaultSemiBold" style={styles.botaoTexto}>
-            Novo
-          </ThemedText>
-        </Pressable>
-      </View>
+      <CabecalhoLogo
+        alturaLogo={36}
+        alinhamentoLogo="left"
+        acaoDireita={
+          <Pressable style={styles.botaoNovo} onPress={() => router.push('/turno/novo')}>
+            <ThemedText type="defaultSemiBold" style={styles.botaoTexto}>
+              Novo
+            </ThemedText>
+          </Pressable>
+        }
+      />
 
       {turnos.length === 0 ? (
-        <ThemedText>Nenhum turno ainda.</ThemedText>
+        <ThemedText style={styles.vazio}>Nenhum turno ainda.</ThemedText>
       ) : (
         <View style={styles.lista}>
           {turnos.map((t) => (
@@ -54,21 +59,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    gap: 12,
-  },
-  topo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
   },
   botaoNovo: {
-    backgroundColor: '#0a7ea4',
+    backgroundColor: corBotao,
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: 12,
   },
   botaoTexto: {
     color: '#fff',
+  },
+  vazio: {
+    opacity: 0.75,
   },
   lista: {
     gap: 10,

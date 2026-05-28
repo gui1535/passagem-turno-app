@@ -1,7 +1,8 @@
 import { StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+
+const COR_TEXTO_INPUT = '#111';
 
 type Props = {
   label: string;
@@ -22,8 +23,7 @@ export function CampoTexto({
   obrigatorio,
   erro,
 }: Props) {
-  const tema = useColorScheme() ?? 'light';
-  const corTexto = tema === 'dark' ? '#fff' : '#111';
+  const corTexto = COR_TEXTO_INPUT;
   const temErro = !!erro;
 
   return (

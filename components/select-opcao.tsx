@@ -2,7 +2,8 @@ import { Picker } from '@react-native-picker/picker';
 import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+
+const COR_TEXTO_INPUT = '#111';
 
 export type OpcaoSelect<T extends string> = {
   label: string;
@@ -19,8 +20,7 @@ type Props<T extends string> = {
 };
 
 export function SelectOpcao<T extends string>({ label, value, opcoes, onChange, obrigatorio, erro }: Props<T>) {
-  const tema = useColorScheme() ?? 'light';
-  const cor = tema === 'dark' ? '#fff' : '#111';
+  const cor = COR_TEXTO_INPUT;
   const temErro = !!erro;
 
   return (

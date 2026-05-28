@@ -7,7 +7,7 @@ import Toast from 'react-native-toast-message';
 import { ThemedText } from '@/components/themed-text';
 import { VisualizadorImagem } from '@/components/visualizador-imagem';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { listarImagensDaFalha, removerImagem, atualizarLegendaImagem } from '@/src/data/repositories';
+import { atualizarLegendaImagem, listarImagensDaFalha, removerImagem } from '@/src/data/repositories';
 import { apagarArquivo } from '@/src/data/storage';
 import type { ImagemFalha } from '@/src/domain/types';
 import {
@@ -71,7 +71,7 @@ function tratarUpload(resultado: ResultadoUploadImagens) {
 }
 
 export function FotosFalha({ falhaId, semCabecalho }: Props) {
-  const corTint = useThemeColor({}, 'tint');
+  const corIconeAcao = useThemeColor({}, 'tint');
   const [imagens, setImagens] = useState<ImagemFalha[]>([]);
   const [enviando, setEnviando] = useState(false);
   const [imagemVisualizando, setImagemVisualizando] = useState<ImagemFalha | null>(null);
@@ -163,9 +163,9 @@ export function FotosFalha({ falhaId, semCabecalho }: Props) {
         onPress={() => void fazerUpload()}
         disabled={enviando}>
         {enviando ? (
-          <ActivityIndicator size="small" color={corTint} />
+          <ActivityIndicator size="small" color={corIconeAcao} />
         ) : (
-          <ThemedText type="defaultSemiBold" style={{ color: corTint }}>
+          <ThemedText type="defaultSemiBold" style={{ color: corIconeAcao }}>
             Fazer upload de fotos
           </ThemedText>
         )}

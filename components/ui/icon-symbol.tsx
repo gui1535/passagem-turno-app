@@ -23,6 +23,7 @@ const MAPPING = {
   'chevron.right': 'chevron-right',
   checkmark: 'check',
   camera: 'photo-camera',
+  'square.and.pencil': 'edit',
 } as IconMapping;
 
 /**

@@ -7,7 +7,10 @@ import { CampoTexto } from '@/components/campo-texto';
 import { TopoVoltar } from '@/components/topo-voltar';
 import { TelaTeclado } from '@/components/tela-teclado';
 import { ThemedText } from '@/components/themed-text';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { Colors, corBotao } from '@/constants/theme';
 import { criarTurno, pegarConfiguracaoApp } from '@/src/data/repositories';
+import { TipoManutencaoTurno } from '@/src/domain/enums';
 
 export default function NovoTurnoScreen() {
   const [data, setData] = useState<Date | null>(new Date());
@@ -15,6 +18,18 @@ export default function NovoTurnoScreen() {
   const [horaFim, setHoraFim] = useState<Date | null>(null);
   const [localizacao, setLocalizacao] = useState('');
   const [descricao, setDescricao] = useState('');
+  const [tiposManutencao, setTiposManutencao] = useState<TipoManutencaoTurno[]>([
+    TipoManutencaoTurno.Acompanhamento,
+  ]);
+  const corIconeAcao = Colors.light.tint;
+
+  function alternarTipo(t: TipoManutencaoTurno) {
+    setTiposManutencao((atual) => {
+      const tem = atual.includes(t);
+      const novo = tem ? atual.filter((x) => x !== t) : [...atual, t];
+      return novo.length > 0 ? novo : [TipoManutencaoTurno.Acompanhamento];
+    });
+  }
 
   const carregarPadroes = useCallback(() => {
     void (async () => {
@@ -38,6 +53,7 @@ export default function NovoTurnoScreen() {
         : undefined,
       localizacao: localizacao.trim() || 'CCO',
       descricaoAtividadeDoDia: descricao.trim() || '',
+      tiposManutencao,
     });
 
     router.replace(`/turno/${turno.id}`);
@@ -70,6 +86,38 @@ export default function NovoTurnoScreen() {
           multiline
         />
       </View>
+      <View style={styles.campo}>
+        <ThemedText type="defaultSemiBold">Tipo</ThemedText>
+        <View style={styles.tiposWrap}>
+          {(
+            [
+              TipoManutencaoTurno.Corretiva,
+              TipoManutencaoTurno.Preventiva,
+              TipoManutencaoTurno.Estudos,
+              TipoManutencaoTurno.Acompanhamento,
+            ] as const
+          ).map((t) => {
+            const marcado = tiposManutencao.includes(t);
+            return (
+              <Pressable
+                key={t}
+                style={[styles.itemSelecao, marcado && { borderColor: corIconeAcao }]}
+                onPress={() => alternarTipo(t)}>
+                <View
+                  style={[
+                    styles.checkbox,
+                    marcado && [styles.checkboxSelecionado, { borderColor: corIconeAcao }],
+                  ]}>
+                  {marcado ? <IconSymbol name="checkmark" size={18} color={corBotao} /> : null}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <ThemedText type="defaultSemiBold">{t}</ThemedText>
+                </View>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
 
       <Pressable style={styles.botao} onPress={salvar}>
         <ThemedText type="defaultSemiBold" style={styles.botaoTexto}>
@@ -87,6 +135,7 @@ const styles = StyleSheet.create({
   },
   campo: {
     marginBottom: 20,
+    gap: 8,
   },
   linha: {
     flexDirection: 'row',
@@ -95,9 +144,35 @@ const styles = StyleSheet.create({
   coluna: {
     flex: 1,
   },
+  tiposWrap: {
+    gap: 10,
+  },
+  itemSelecao: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#687076',
+    borderRadius: 12,
+    padding: 12,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#687076',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+  },
+  checkboxSelecionado: {
+    backgroundColor: '#fff',
+    borderWidth: 2,
+  },
   botao: {
     marginTop: 8,
-    backgroundColor: '#0a7ea4',
+    backgroundColor: corBotao,
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',

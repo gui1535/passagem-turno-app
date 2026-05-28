@@ -8,6 +8,7 @@ import { CampoTexto } from '@/components/campo-texto';
 import { TopoVoltar } from '@/components/topo-voltar';
 import { TelaTeclado } from '@/components/tela-teclado';
 import { ThemedText } from '@/components/themed-text';
+import { corBotao } from '@/constants/theme';
 import type { ConfiguracaoApp } from '@/src/domain/types';
 import { pegarConfiguracaoApp, salvarConfiguracaoApp } from '@/src/data/repositories';
 
@@ -147,7 +148,7 @@ const styles = StyleSheet.create({
   linha: { flexDirection: 'row', gap: 12 },
   coluna: { flex: 1 },
   botao: {
-    backgroundColor: '#0a7ea4',
+    backgroundColor: corBotao,
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',

@@ -1,127 +1,100 @@
-import { useLocalSearchParams } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { Tela } from '@/components/tela';
-import { TopoVoltar } from '@/components/topo-voltar';
 import { ThemedText } from '@/components/themed-text';
-import type { FalhaAtividade, ImagemFalha, Responsavel, Turno } from '@/src/domain/types';
+import { TopoVoltar } from '@/components/topo-voltar';
+import { VisualizadorRelatorio } from '@/components/visualizador-relatorio';
+import { corBotao } from '@/constants/theme';
 import {
   listarFalhas,
   listarImagensDaFalha,
   listarResponsaveis,
   pegarTurnoPorId,
 } from '@/src/data/repositories';
-import { compartilharPdf, gerarPdfRelatorio, montarHtmlRelatorio } from '@/src/pdf';
+import type { FalhaAtividade, ImagemFalha, Responsavel, Turno } from '@/src/domain/types';
 
 export default function PdfScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const turnoId = String(id);
 
+  const [carregando, setCarregando] = useState(true);
   const [turno, setTurno] = useState<Turno | null>(null);
   const [responsaveis, setResponsaveis] = useState<Responsavel[]>([]);
   const [falhas, setFalhas] = useState<FalhaAtividade[]>([]);
   const [imagensPorFalha, setImagensPorFalha] = useState<Record<string, ImagemFalha[]>>({});
-  const [uriPdf, setUriPdf] = useState<string | null>(null);
-  const [carregando, setCarregando] = useState(false);
 
-  const assunto = useMemo(() => {
-    const data = turno?.data ?? '';
-    return `Passagem de Turno - CCO - ${data}`;
-  }, [turno?.data]);
-
-  useEffect(() => {
+  const carregar = useCallback(() => {
     void (async () => {
-      const t = await pegarTurnoPorId(turnoId);
-      const r = await listarResponsaveis(turnoId);
-      const f = await listarFalhas(turnoId);
-      const imagens: Record<string, ImagemFalha[]> = {};
-      for (const item of f) {
-        imagens[item.id] = await listarImagensDaFalha(item.id);
+      setCarregando(true);
+      try {
+        const [t, r, f] = await Promise.all([
+          pegarTurnoPorId(turnoId),
+          listarResponsaveis(turnoId),
+          listarFalhas(turnoId),
+        ]);
+
+        const imagens: Record<string, ImagemFalha[]> = {};
+        for (const item of f) {
+          imagens[item.id] = await listarImagensDaFalha(item.id);
+        }
+
+        setTurno(t);
+        setResponsaveis(r);
+        setFalhas(f);
+        setImagensPorFalha(imagens);
+      } finally {
+        setCarregando(false);
       }
-      setTurno(t);
-      setResponsaveis(r);
-      setFalhas(f);
-      setImagensPorFalha(imagens);
     })();
   }, [turnoId]);
 
-  async function gerar() {
-    if (!turno) return;
-    setCarregando(true);
-    try {
-      const html = montarHtmlRelatorio({ turno, responsaveis, falhas, imagensPorFalha });
-      const nome = `PassagemTurno_${turno.data.replaceAll('/', '-')}.pdf`;
-      const uri = await gerarPdfRelatorio(html, nome);
-      setUriPdf(uri);
-    } finally {
-      setCarregando(false);
-    }
-  }
+  useFocusEffect(
+    useCallback(() => {
+      carregar();
+    }, [carregar])
+  );
 
-  async function compartilhar() {
-    if (!uriPdf) return;
-    await compartilharPdf(uriPdf, assunto, '');
-  }
+  const dadosRelatorio = turno && !carregando ? { turno, responsaveis, falhas, imagensPorFalha } : null;
 
   return (
     <Tela style={styles.container}>
-      <TopoVoltar titulo="PDF" />
+      <TopoVoltar titulo="Pré-visualização do PDF" />
 
-      <View style={[styles.card, styles.secao, { marginTop: 20 }]}>
-        <ThemedText>
-          <ThemedText type="defaultSemiBold">Turno:</ThemedText> {turno?.data ?? '-'}
-        </ThemedText>
-        <ThemedText>
-          <ThemedText type="defaultSemiBold">Responsáveis:</ThemedText> {responsaveis.length}
-        </ThemedText>
-        <ThemedText>
-          <ThemedText type="defaultSemiBold">Falhas/atividades:</ThemedText> {falhas.length}
-        </ThemedText>
-      </View>
+      {carregando ? (
+        <View style={styles.estado}>
+          <ActivityIndicator size="large" color={corBotao} />
+          <ThemedText style={styles.textoEstado}>Carregando dados do turno...</ThemedText>
+        </View>
+      ) : !turno ? (
+        <View style={styles.estado}>
+          <ThemedText style={styles.textoEstado}>Turno não encontrado.</ThemedText>
+        </View>
+      ) : null}
 
-      <View style={styles.secao}>
-        <Pressable style={styles.botao} onPress={gerar} disabled={carregando}>
-          <ThemedText type="defaultSemiBold" style={styles.botaoTexto}>
-            {carregando ? 'Gerando...' : 'Gerar PDF'}
-          </ThemedText>
-        </Pressable>
-      </View>
-
-      <View style={styles.secao}>
-        <Pressable style={[styles.botao, !uriPdf && styles.botaoDesativado]} onPress={compartilhar} disabled={!uriPdf}>
-          <ThemedText type="defaultSemiBold" style={styles.botaoTexto}>
-            Compartilhar
-          </ThemedText>
-        </Pressable>
-      </View>
-
-      {uriPdf ? <ThemedText style={styles.mini}>Arquivo: {uriPdf}</ThemedText> : null}
+      <VisualizadorRelatorio
+        visivel={!!turno}
+        dados={dadosRelatorio}
+        onFechar={() => router.back()}
+      />
     </Tela>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  secao: {
-    marginBottom: 20,
+  container: {
+    flex: 1,
+    padding: 16,
   },
-  card: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#687076',
-    borderRadius: 12,
-    padding: 12,
-    gap: 6,
-  },
-  botao: {
-    backgroundColor: '#0a7ea4',
-    paddingVertical: 12,
-    borderRadius: 12,
+  estado: {
+    marginTop: 24,
     alignItems: 'center',
+    gap: 12,
   },
-  botaoDesativado: {
-    opacity: 0.5,
+  textoEstado: {
+    opacity: 0.75,
+    textAlign: 'center',
   },
-  botaoTexto: { color: '#fff' },
-  mini: { opacity: 0.75 },
 });
+

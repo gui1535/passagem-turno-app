@@ -2,8 +2,9 @@ import { Picker } from '@react-native-picker/picker';
 import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Empresa } from '@/src/domain/enums';
+
+const COR_TEXTO_INPUT = '#111';
 
 type Props = {
   label: string;
@@ -14,8 +15,7 @@ type Props = {
 };
 
 export function SelectEmpresa({ label, value, onChange, obrigatorio, erro }: Props) {
-  const tema = useColorScheme() ?? 'light';
-  const cor = tema === 'dark' ? '#fff' : '#111';
+  const cor = COR_TEXTO_INPUT;
   const temErro = !!erro;
 
   return (

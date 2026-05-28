@@ -8,9 +8,7 @@ import { TelaTeclado } from '@/components/tela-teclado';
 import { ThemedText } from '@/components/themed-text';
 import { TopoVoltar } from '@/components/topo-voltar';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useThemeColor } from '@/hooks/use-theme-color';
+import { Colors, corBotao } from '@/constants/theme';
 import {
   criarResponsavel,
   listarPessoasPadrao,
@@ -27,10 +25,8 @@ function mesmoResponsavel(a: Pick<Responsavel, 'nome' | 'empresa' | 'empresaOutr
 export default function ResponsaveisScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const turnoId = String(id);
-  const tema = useColorScheme() ?? 'light';
-  const corTint = useThemeColor({}, 'tint');
-  const corIcone = tema === 'light' ? Colors.light.icon : Colors.dark.icon;
-  const corCheck = '#0a7ea4';
+  const corIcone = Colors.light.icon;
+  const corIconeAcao = Colors.light.tint;
 
   const [pessoasPadrao, setPessoasPadrao] = useState<PessoaPadrao[]>([]);
   const [responsaveis, setResponsaveis] = useState<Responsavel[]>([]);
@@ -146,14 +142,14 @@ export default function ResponsaveisScreen() {
             return (
               <Pressable
                 key={p.id}
-                style={[styles.itemSelecao, selecionado && { borderColor: corTint }]}
+                style={[styles.itemSelecao, selecionado && { borderColor: corIconeAcao }]}
                 onPress={() => alternarPessoa(p)}>
                 <View
                   style={[
                     styles.checkbox,
-                    selecionado && [styles.checkboxSelecionado, { borderColor: corCheck }],
+                    selecionado && [styles.checkboxSelecionado, { borderColor: corIconeAcao }],
                   ]}>
-                  {selecionado ? <IconSymbol name="checkmark" size={18} color={corCheck} /> : null}
+                  {selecionado ? <IconSymbol name="checkmark" size={18} color={corBotao} /> : null}
                 </View>
                 <View style={{ flex: 1 }}>
                   <ThemedText type="defaultSemiBold">{p.nome}</ThemedText>
@@ -332,7 +328,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   botao: {
-    backgroundColor: '#0a7ea4',
+    backgroundColor: corBotao,
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',

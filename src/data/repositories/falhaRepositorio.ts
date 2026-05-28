@@ -12,7 +12,6 @@ type LinhaFalha = {
   titulo_defeito: string;
   descricao_defeito: string;
   acoes_realizadas: string;
-  proximo_turno_acompanhar: number;
   nome_registrou: string;
   nome_editou: string | null;
   created_at: string;
@@ -30,7 +29,6 @@ function mapearFalha(l: LinhaFalha): FalhaAtividade {
     tituloDefeito: l.titulo_defeito,
     descricaoDefeito: l.descricao_defeito,
     acoesRealizadas: l.acoes_realizadas,
-    proximoTurnoAcompanhar: !!l.proximo_turno_acompanhar,
     nomeRegistrou: l.nome_registrou,
     nomeEditou: l.nome_editou ?? undefined,
     createdAt: l.created_at,
@@ -100,9 +98,9 @@ export async function criarFalha(
     `INSERT INTO falhas_atividades (
       id, turno_id, numero_falha, local, situacao, status,
       titulo_defeito, descricao_defeito, acoes_realizadas,
-      proximo_turno_acompanhar, nome_registrou, nome_editou,
+      nome_registrou, nome_editou,
       created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
     item.id,
     item.turnoId,
     item.numeroFalha ?? null,
@@ -112,7 +110,6 @@ export async function criarFalha(
     item.tituloDefeito,
     item.descricaoDefeito,
     item.acoesRealizadas,
-    item.proximoTurnoAcompanhar ? 1 : 0,
     item.nomeRegistrou,
     item.nomeEditou ?? null,
     item.createdAt,
@@ -135,7 +132,6 @@ export async function atualizarFalha(item: FalhaAtividade) {
       titulo_defeito = ?,
       descricao_defeito = ?,
       acoes_realizadas = ?,
-      proximo_turno_acompanhar = ?,
       nome_registrou = ?,
       nome_editou = ?,
       updated_at = ?
@@ -147,7 +143,6 @@ export async function atualizarFalha(item: FalhaAtividade) {
     atualizado.tituloDefeito,
     atualizado.descricaoDefeito,
     atualizado.acoesRealizadas,
-    atualizado.proximoTurnoAcompanhar ? 1 : 0,
     atualizado.nomeRegistrou,
     atualizado.nomeEditou ?? null,
     atualizado.updatedAt,

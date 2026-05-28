@@ -2,7 +2,7 @@ import * as SQLite from 'expo-sqlite';
 
 // Banco local (SQLite)
 export const NOME_BANCO = 'passagem_turno.db';
-export const VERSAO_BANCO = 4;
+export const VERSAO_BANCO = 6;
 
 let banco: SQLite.SQLiteDatabase | null = null;
 
@@ -36,6 +36,12 @@ export async function iniciarBanco() {
   }
   if (versaoAtual < 4) {
     await aplicarMigracaoV4(db);
+  }
+  if (versaoAtual < 5) {
+    await aplicarMigracaoV5(db);
+  }
+  if (versaoAtual < 6) {
+    await aplicarMigracaoV6(db);
   }
   await salvarVersao(db, VERSAO_BANCO);
 }
@@ -225,5 +231,54 @@ async function aplicarMigracaoV4(db: SQLite.SQLiteDatabase) {
     CREATE INDEX IF NOT EXISTS idx_falhas_status ON falhas_atividades(status);
     CREATE INDEX IF NOT EXISTS idx_falhas_local ON falhas_atividades(local);
     CREATE INDEX IF NOT EXISTS idx_falhas_registrou ON falhas_atividades(nome_registrou);
+  `);
+}
+
+async function aplicarMigracaoV5(db: SQLite.SQLiteDatabase) {
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS falhas_atividades_nova (
+      id TEXT PRIMARY KEY NOT NULL,
+      turno_id TEXT NOT NULL,
+      numero_falha TEXT,
+      local TEXT NOT NULL,
+      situacao TEXT NOT NULL,
+      status TEXT NOT NULL,
+      titulo_defeito TEXT NOT NULL,
+      descricao_defeito TEXT NOT NULL,
+      acoes_realizadas TEXT NOT NULL,
+      nome_registrou TEXT NOT NULL,
+      nome_editou TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (turno_id) REFERENCES turnos(id) ON DELETE CASCADE
+    );
+
+    INSERT INTO falhas_atividades_nova (
+      id, turno_id, numero_falha, local, situacao, status,
+      titulo_defeito, descricao_defeito, acoes_realizadas,
+      nome_registrou, nome_editou,
+      created_at, updated_at
+    )
+    SELECT
+      id, turno_id, numero_falha, local, situacao, status,
+      titulo_defeito, descricao_defeito, acoes_realizadas,
+      nome_registrou, nome_editou,
+      created_at, updated_at
+    FROM falhas_atividades;
+
+    DROP TABLE falhas_atividades;
+    ALTER TABLE falhas_atividades_nova RENAME TO falhas_atividades;
+
+    CREATE INDEX IF NOT EXISTS idx_falhas_turno ON falhas_atividades(turno_id);
+    CREATE INDEX IF NOT EXISTS idx_falhas_situacao ON falhas_atividades(situacao);
+    CREATE INDEX IF NOT EXISTS idx_falhas_status ON falhas_atividades(status);
+    CREATE INDEX IF NOT EXISTS idx_falhas_local ON falhas_atividades(local);
+    CREATE INDEX IF NOT EXISTS idx_falhas_registrou ON falhas_atividades(nome_registrou);
+  `);
+}
+
+async function aplicarMigracaoV6(db: SQLite.SQLiteDatabase) {
+  await db.execAsync(`
+    ALTER TABLE turnos ADD COLUMN tipo_manutencao TEXT NOT NULL DEFAULT 'Acompanhamento';
   `);
 }

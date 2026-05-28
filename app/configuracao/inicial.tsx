@@ -6,16 +6,18 @@ import Toast from 'react-native-toast-message';
 import { CampoDataHora } from '@/components/campo-data-hora';
 import { CampoTexto } from '@/components/campo-texto';
 import { SelectEmpresa } from '@/components/select-empresa';
+import { CabecalhoLogo } from '@/components/cabecalho-logo';
 import { TelaTeclado } from '@/components/tela-teclado';
 import { ThemedText } from '@/components/themed-text';
+import { corBotao } from '@/constants/theme';
+import {
+    adicionarPessoaPadrao,
+    listarPessoasPadrao,
+    pegarConfiguracaoApp,
+    salvarConfiguracaoApp,
+} from '@/src/data/repositories';
 import { Empresa } from '@/src/domain/enums';
 import type { ConfiguracaoApp, PessoaPadrao } from '@/src/domain/types';
-import {
-  adicionarPessoaPadrao,
-  listarPessoasPadrao,
-  pegarConfiguracaoApp,
-  salvarConfiguracaoApp,
-} from '@/src/data/repositories';
 
 export default function ConfiguracaoInicialScreen() {
   const [nomeTurno, setNomeTurno] = useState('Passagem de Turno');
@@ -84,10 +86,18 @@ export default function ConfiguracaoInicialScreen() {
 
   return (
     <TelaTeclado style={styles.container}>
-      <ThemedText type="title">Primeiro acesso</ThemedText>
-      <ThemedText style={styles.mini}>
-        Configure os padrões do turno. Você pode mudar depois em Configurações.
-      </ThemedText>
+      <CabecalhoLogo
+        alturaLogo={44}
+        alinhamentoLogo="center"
+        conteudoCentralizado
+        style={styles.cabecalhoInicial}>
+        <ThemedText type="title" style={styles.tituloInicial}>
+          Primeiro acesso
+        </ThemedText>
+        <ThemedText style={styles.mini}>
+          Configure os padrões do turno. Você pode mudar depois em Configurações.
+        </ThemedText>
+      </CabecalhoLogo>
 
       <View style={styles.card}>
         <ThemedText type="defaultSemiBold">Padrões</ThemedText>
@@ -210,7 +220,15 @@ function formatarHora(d: Date) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, gap: 12 },
-  mini: { opacity: 0.75 },
+  cabecalhoInicial: {
+    marginBottom: 8,
+  },
+  tituloInicial: {
+    textAlign: 'center',
+    fontSize: 24,
+    lineHeight: 28,
+  },
+  mini: { opacity: 0.75, textAlign: 'center' },
   card: {
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#687076',
@@ -221,13 +239,13 @@ const styles = StyleSheet.create({
   linha: { flexDirection: 'row', gap: 12 },
   coluna: { flex: 1 },
   botao: {
-    backgroundColor: '#0a7ea4',
+    backgroundColor: corBotao,
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',
   },
   botaoGrande: {
-    backgroundColor: '#0a7ea4',
+    backgroundColor: corBotao,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',

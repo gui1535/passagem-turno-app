@@ -4,7 +4,6 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
 type Props = {
   titulo: string;
@@ -15,8 +14,7 @@ type Props = {
 
 export function SecaoDropdown({ titulo, descricao, inicioAberto = false, children }: Props) {
   const [aberto, setAberto] = useState(inicioAberto);
-  const tema = useColorScheme() ?? 'light';
-  const corIcone = tema === 'light' ? Colors.light.icon : Colors.dark.icon;
+  const corIcone = Colors.light.icon;
 
   return (
     <View style={styles.card}>

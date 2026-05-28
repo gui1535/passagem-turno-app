@@ -7,7 +7,9 @@ import { ThemedText } from '@/components/themed-text';
 export default function ConfiguracoesTab() {
   return (
     <Tela style={styles.container}>
-      <ThemedText type="title" style={styles.titulo}>Configurações</ThemedText>
+      <ThemedText type="title" style={styles.titulo}>
+        Configurações
+      </ThemedText>
 
       <View style={styles.listaMenu}>
         <ItemMenu
@@ -46,4 +48,3 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
 });
-

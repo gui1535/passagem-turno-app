@@ -26,6 +26,13 @@ export enum StatusTurno {
   Finalizado = 'Finalizado',
 }
 
+export enum TipoManutencaoTurno {
+  Corretiva = 'Corretiva',
+  Preventiva = 'Preventiva',
+  Estudos = 'Estudos',
+  Acompanhamento = 'Acompanhamento',
+}
+
 export enum EntidadeHistorico {
   Turno = 'Turno',
   Responsavel = 'Responsavel',

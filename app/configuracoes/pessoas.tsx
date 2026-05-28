@@ -6,6 +6,7 @@ import { SelectEmpresa } from '@/components/select-empresa';
 import { TopoVoltar } from '@/components/topo-voltar';
 import { TelaTeclado } from '@/components/tela-teclado';
 import { ThemedText } from '@/components/themed-text';
+import { corBotao } from '@/constants/theme';
 import { Empresa } from '@/src/domain/enums';
 import type { PessoaPadrao } from '@/src/domain/types';
 import { adicionarPessoaPadrao, listarPessoasPadrao, removerPessoaPadrao } from '@/src/data/repositories';
@@ -134,7 +135,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   botao: {
-    backgroundColor: '#0a7ea4',
+    backgroundColor: corBotao,
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',

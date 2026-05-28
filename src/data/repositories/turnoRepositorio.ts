@@ -1,5 +1,5 @@
 import type { Turno } from '@/src/domain/types';
-import { StatusTurno } from '@/src/domain/enums';
+import { StatusTurno, TipoManutencaoTurno } from '@/src/domain/enums';
 import { pegarBanco } from '@/src/data/database';
 import { agoraIso, criarId } from '@/src/utils/geral';
 
@@ -10,10 +10,27 @@ type LinhaTurno = {
   hora_fim: string | null;
   localizacao: string;
   descricao_atividade_dia: string;
+  tipo_manutencao: string;
   status: string;
   created_at: string;
   updated_at: string;
 };
+
+function parseTiposManutencao(s: string | null | undefined): TipoManutencaoTurno[] {
+  const bruto = (s ?? '').trim();
+  if (!bruto) return [TipoManutencaoTurno.Acompanhamento];
+  const itens = bruto
+    .split(',')
+    .map((x) => x.trim())
+    .filter(Boolean) as TipoManutencaoTurno[];
+  const unicos = Array.from(new Set(itens));
+  return unicos.length > 0 ? unicos : [TipoManutencaoTurno.Acompanhamento];
+}
+
+function formatTiposManutencao(tipos: TipoManutencaoTurno[] | null | undefined) {
+  const lista = (tipos ?? []).map((t) => String(t).trim()).filter(Boolean);
+  return lista.length > 0 ? Array.from(new Set(lista)).join(',') : TipoManutencaoTurno.Acompanhamento;
+}
 
 function mapearTurno(l: LinhaTurno): Turno {
   return {
@@ -23,6 +40,7 @@ function mapearTurno(l: LinhaTurno): Turno {
     horaFim: l.hora_fim ?? undefined,
     localizacao: l.localizacao,
     descricaoAtividadeDoDia: l.descricao_atividade_dia,
+    tiposManutencao: parseTiposManutencao(l.tipo_manutencao),
     status: l.status as Turno['status'],
     createdAt: l.created_at,
     updatedAt: l.updated_at,
@@ -54,6 +72,7 @@ export async function criarTurno(
   const turno: Turno = {
     id: criarId(),
     status: dados.status ?? StatusTurno.Rascunho,
+    tiposManutencao: dados.tiposManutencao ?? [TipoManutencaoTurno.Acompanhamento],
     createdAt: agora,
     updatedAt: agora,
     ...dados,
@@ -61,14 +80,15 @@ export async function criarTurno(
 
   await db.runAsync(
     `INSERT INTO turnos (
-      id, data, hora_inicio, hora_fim, localizacao, descricao_atividade_dia, status, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+      id, data, hora_inicio, hora_fim, localizacao, descricao_atividade_dia, tipo_manutencao, status, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
     turno.id,
     turno.data,
     turno.horaInicio ?? null,
     turno.horaFim ?? null,
     turno.localizacao,
     turno.descricaoAtividadeDoDia,
+    formatTiposManutencao(turno.tiposManutencao),
     turno.status,
     turno.createdAt,
     turno.updatedAt
@@ -88,6 +108,7 @@ export async function atualizarTurno(turno: Turno): Promise<void> {
       hora_fim = ?,
       localizacao = ?,
       descricao_atividade_dia = ?,
+      tipo_manutencao = ?,
       status = ?,
       updated_at = ?
     WHERE id = ?;`,
@@ -96,6 +117,7 @@ export async function atualizarTurno(turno: Turno): Promise<void> {
     atualizado.horaFim ?? null,
     atualizado.localizacao,
     atualizado.descricaoAtividadeDoDia,
+    formatTiposManutencao(atualizado.tiposManutencao),
     atualizado.status,
     atualizado.updatedAt,
     atualizado.id

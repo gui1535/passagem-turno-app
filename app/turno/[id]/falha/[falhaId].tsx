@@ -11,17 +11,19 @@ import { TelaFormularioFixo } from '@/components/tela-formulario-fixo';
 import { ThemedText } from '@/components/themed-text';
 import { TopoVoltar } from '@/components/topo-voltar';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { corBotao } from '@/constants/theme';
+import { useThemeColor } from '@/hooks/use-theme-color';
 import { atualizarFalha, pegarFalhaPorId } from '@/src/data/repositories';
 import { SituacaoFalha, StatusFalha } from '@/src/domain/enums';
 import type { FalhaAtividade } from '@/src/domain/types';
 
 const OPCOES_SITUACAO = Object.values(SituacaoFalha).map((v) => ({ label: v, value: v }));
 const OPCOES_STATUS = Object.values(StatusFalha).map((v) => ({ label: v, value: v }));
-const COR_ICONE_ACAO = '#0a7ea4';
 
 export default function FalhaDetalheScreen() {
   const { falhaId } = useLocalSearchParams<{ falhaId: string }>();
   const id = String(falhaId);
+  const corIconeAcao = useThemeColor({}, 'tint');
 
   const [falha, setFalha] = useState<FalhaAtividade | null>(null);
   const [titulo, setTitulo] = useState('');
@@ -94,9 +96,9 @@ export default function FalhaDetalheScreen() {
               disabled={abrindoCamera}
               accessibilityLabel="Tirar foto">
               {abrindoCamera ? (
-                <ActivityIndicator size="small" color={COR_ICONE_ACAO} />
+                <ActivityIndicator size="small" color={corIconeAcao} />
               ) : (
-                <IconSymbol name="camera" size={22} color={COR_ICONE_ACAO} />
+                <IconSymbol name="camera" size={22} color={corIconeAcao} />
               )}
             </Pressable>
           }
@@ -220,7 +222,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   botao: {
-    backgroundColor: '#0a7ea4',
+    backgroundColor: corBotao,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',

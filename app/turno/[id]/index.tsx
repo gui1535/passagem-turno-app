@@ -1,19 +1,15 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Keyboard, Pressable, StyleSheet, View } from 'react-native';
+import { Alert, Keyboard, Pressable, StyleSheet, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 import { CampoTexto } from '@/components/campo-texto';
 import { SelectOpcao } from '@/components/select-opcao';
-import { TopoVoltar } from '@/components/topo-voltar';
 import { TelaTeclado } from '@/components/tela-teclado';
 import { ThemedText } from '@/components/themed-text';
+import { TopoVoltar } from '@/components/topo-voltar';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useThemeColor } from '@/hooks/use-theme-color';
-import { capturarFotoParaFalha } from '@/src/features/imagens/adicionarImagemFalha';
-import type { FalhaAtividade, Turno } from '@/src/domain/types';
+import { Colors, corBotao } from '@/constants/theme';
 import {
   criarFalha,
   listarFalhas,
@@ -22,6 +18,8 @@ import {
   removerFalha,
 } from '@/src/data/repositories';
 import { SituacaoFalha, StatusFalha } from '@/src/domain/enums';
+import type { FalhaAtividade, Turno } from '@/src/domain/types';
+import { capturarFotoParaFalha } from '@/src/features/imagens/adicionarImagemFalha';
 
 const OPCOES_SITUACAO = Object.values(SituacaoFalha).map((v) => ({ label: v, value: v }));
 const OPCOES_STATUS = Object.values(StatusFalha).map((v) => ({ label: v, value: v }));
@@ -29,9 +27,8 @@ const OPCOES_STATUS = Object.values(StatusFalha).map((v) => ({ label: v, value: 
 export default function TurnoDetalheScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const turnoId = String(id);
-  const tema = useColorScheme() ?? 'light';
-  const corIcone = tema === 'light' ? Colors.light.icon : Colors.dark.icon;
-  const corTint = useThemeColor({}, 'tint');
+  const corIcone = Colors.light.icon;
+  const corIconeAcao = Colors.light.tint;
 
   const [turno, setTurno] = useState<Turno | null>(null);
   const [falhas, setFalhas] = useState<FalhaAtividade[]>([]);
@@ -74,7 +71,6 @@ export default function TurnoDetalheScreen() {
       tituloDefeito: titulo.trim(),
       descricaoDefeito: '',
       acoesRealizadas: '',
-      proximoTurnoAcompanhar: false,
       nomeRegistrou: registrou.trim() || 'Não informado',
       nomeEditou: undefined,
     });
@@ -89,8 +85,19 @@ export default function TurnoDetalheScreen() {
   }
 
   async function excluirFalha(idFalha: string) {
-    await removerFalha(idFalha);
-    carregar();
+    Alert.alert('Excluir falha', 'Tem certeza que deseja excluir esta falha?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Excluir',
+        style: 'destructive',
+        onPress: () => {
+          void (async () => {
+            await removerFalha(idFalha);
+            carregar();
+          })();
+        },
+      },
+    ]);
   }
 
   async function tirarFotoFalha(falhaId: string) {
@@ -112,12 +119,26 @@ export default function TurnoDetalheScreen() {
 
   return (
     <TelaTeclado style={styles.container}>
-      <TopoVoltar titulo={tituloTela} />
+      <TopoVoltar
+        titulo={tituloTela}
+        acaoDireita={
+          <Pressable
+            onPress={() => router.push(`/turno/${turnoId}/editar` as any)}
+            style={styles.botaoAcaoTopo}
+            accessibilityLabel="Editar turno">
+            <IconSymbol name="square.and.pencil" size={20} color={corIconeAcao} />
+          </Pressable>
+        }
+      />
 
       {turno ? (
         <View style={[styles.card, styles.secao, { marginTop: 20 }]}>
           <ThemedText>
             <ThemedText type="defaultSemiBold">Local:</ThemedText> {turno.localizacao}
+          </ThemedText>
+          <ThemedText>
+            <ThemedText type="defaultSemiBold">Tipo:</ThemedText>{' '}
+            {(turno.tiposManutencao?.length ? turno.tiposManutencao : ['Acompanhamento']).join(', ')}
           </ThemedText>
           {turno.horaInicio || turno.horaFim ? (
             <ThemedText>
@@ -171,7 +192,7 @@ export default function TurnoDetalheScreen() {
                   style={styles.botaoFoto}
                   onPress={() => void tirarFotoFalha(f.id)}
                   accessibilityLabel="Tirar foto">
-                  <IconSymbol name="camera" size={20} color={corTint} />
+                  <IconSymbol name="camera" size={20} color={corIconeAcao} />
                 </Pressable>
               </View>
             </View>
@@ -232,11 +253,8 @@ export default function TurnoDetalheScreen() {
       </View>
 
       <View style={styles.atalhos}>
-        <Pressable style={styles.atalho} onPress={() => router.push(`/turno/${turnoId}/revisao` as any)}>
-          <ThemedText type="defaultSemiBold">Revisão</ThemedText>
-        </Pressable>
         <Pressable style={styles.atalho} onPress={() => router.push(`/turno/${turnoId}/pdf` as any)}>
-          <ThemedText type="defaultSemiBold">Gerar PDF</ThemedText>
+          <ThemedText type="defaultSemiBold">Pré-visualizar PDF</ThemedText>
         </Pressable>
       </View>
     </TelaTeclado>
@@ -341,7 +359,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   botao: {
-    backgroundColor: '#0a7ea4',
+    backgroundColor: corBotao,
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',
@@ -350,16 +368,23 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   atalhos: {
-    flexDirection: 'row',
-    gap: 10,
     marginBottom: 20,
   },
   atalho: {
-    flex: 1,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#687076',
     borderRadius: 12,
     padding: 14,
     alignItems: 'center',
+  },
+  botaoAcaoTopo: {
+    width: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#687076',
   },
 });

@@ -4,6 +4,7 @@ import type {
   SituacaoFalha,
   StatusFalha,
   StatusTurno,
+  TipoManutencaoTurno,
 } from '@/src/domain/enums';
 
 export type Turno = {
@@ -13,6 +14,7 @@ export type Turno = {
   horaFim?: string;
   localizacao: string;
   descricaoAtividadeDoDia: string;
+  tiposManutencao: TipoManutencaoTurno[];
   status: StatusTurno;
   createdAt: string;
   updatedAt: string;
@@ -36,7 +38,6 @@ export type FalhaAtividade = {
   tituloDefeito: string;
   descricaoDefeito: string;
   acoesRealizadas: string;
-  proximoTurnoAcompanhar: boolean;
   nomeRegistrou: string;
   nomeEditou?: string;
   createdAt: string;
